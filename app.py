@@ -1,8 +1,11 @@
+import asyncio
 from collections import defaultdict
+from functools import partial
 from dataclasses import dataclass, field
 from typing import List, Tuple
 
 import hivemind
+from async_timeout import timeout
 from flask import Flask
 
 from petals.constants import PUBLIC_INITIAL_PEERS
@@ -10,8 +13,38 @@ from petals.data_structures import ServerState
 from petals.dht_utils import get_remote_module_infos
 
 
-dht = hivemind.DHT(initial_peers=PUBLIC_INITIAL_PEERS, client_mode=True, num_workers=32, start=True)
+reachable_cache = hivemind.TimedStorage()
 
+
+async def check_for_network_errors(
+    peer_id, node, connect_timeout = 5, success_expiration = 600, failure_expiration = 60,
+):
+    if peer_id in reachable_cache:
+        return reachable_cache.get(peer_id).value
+
+    try:
+        with timeout(connect_timeout):
+            await node.p2p._client.connect(peer_id, [])
+            await node.p2p._client.disconnect(peer_id)
+
+        reachable_cache.store(peer_id, None, hivemind.get_dht_time() + success_expiration)
+        return None
+    except Exception as e:
+        if isinstance(e, asyncio.TimeoutError):
+            return f"Failed to connect in {connect_timeout:.0f} sec. Firewall may be blocking connections"
+        message = str(e)
+        message = message if message else repr(e)
+
+        reachable_cache.store(peer_id, message, hivemind.get_dht_time() + failure_expiration)
+        return message
+
+
+async def get_network_errors(peer_ids, _, node):
+    errors = await asyncio.gather(*[check_for_network_errors(peer_id, node) for peer_id in peer_ids])
+    return {peer_id: err for peer_id, err in zip(peer_ids, errors) if err is not None}
+
+
+dht = hivemind.DHT(initial_peers=PUBLIC_INITIAL_PEERS, client_mode=True, num_workers=32, start=True)
 app = Flask(__name__)
 
 @app.route("/")
@@ -39,7 +72,6 @@ def show_module_infos(module_infos, total_blocks=70):
 
         found = False
         for peer_id, server in info.servers.items():
-            servers[peer_id].friendly_peer_id = str(peer_id)
             servers[peer_id].throughput = server.throughput
             servers[peer_id].blocks.append((block_idx, server.state))
             if server.state == ServerState.ONLINE:
@@ -47,22 +79,47 @@ def show_module_infos(module_infos, total_blocks=70):
         n_found_blocks += found
 
     swarm_state = "healthy" if n_found_blocks == total_blocks else "broken"
-    lines = [f"Swarm state: {swarm_state}", ""]
+    lines = [f"Swarm state: {swarm_state}\n"]
 
-    servers = sorted(servers.values(), key=lambda item: item.friendly_peer_id)
-    for item in servers:
-        row_name = f'{item.friendly_peer_id}, {item.throughput:.1f} RPS'
-        row_name += ' ' * max(0, 21 - len(row_name))
+    network_errors = dht.run_coroutine(partial(get_network_errors, list(servers.keys())))
+
+    servers = sorted(servers.items(), key=lambda item: str(item[0]))
+    for peer_id, server_info in servers:
+        row_name = f'{peer_id}, {server_info.throughput:.1f} RPS'
+        row_name += ' ' * max(0, 58 - len(row_name))
+
+        if peer_id in network_errors:
+            state = "UNREACHABLE"
 
         row = [' ' for _ in range(total_blocks)]
-        for block_idx, state in item.blocks:
-            if state == ServerState.ONLINE:
-                row[block_idx] = '#'
+        for block_idx, state in server_info.blocks:
+            if state == ServerState.OFFLINE:
+                row[block_idx] = '_'
+                if peer_id in network_errors:
+                    del network_errors[peer_id]
+            elif peer_id in network_errors:
+                row[block_idx] = '?'
             elif state == ServerState.JOINING:
                 row[block_idx] = 'J'
-            elif state == ServerInfo.OFFLINE:
-                row[block_idx] = '_'
+            elif state == ServerState.ONLINE:
+                row[block_idx] = '#'
         row = ''.join(row)
 
         lines.append(f"{row_name} |{row}|")
+
+    lines.extend([
+        "\n\nLegend:\n",
+        "# - online",
+        "J - joining     (loading blocks)",
+        "? - unreachable (port forwarding/NAT/firewall issues, see below)",
+        "_ - offline     (just disconnected)",
+    ])
+
+    if network_errors:
+        lines.append("\n\nServer reachability issues (updated every 1 min):\n")
+        for peer_id, err in sorted(network_errors.items(), key=lambda item: str(item[0])):
+            lines.append(f'{peer_id} | {err}')
+        lines.append("\nPlease ask for help in #running-a-server if you are not sure how to fix this.")
+
     return '\n'.join(lines)
+
