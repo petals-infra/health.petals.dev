@@ -86,7 +86,7 @@ def show_module_infos(module_infos, total_blocks=70):
     servers = sorted(servers.items(), key=lambda item: str(item[0]))
     for peer_id, server_info in servers:
         row_name = f'{peer_id}, {server_info.throughput:.1f} RPS'
-        row_name += ' ' * max(0, 58 - len(row_name))
+        row_name += ' ' * max(0, 63 - len(row_name))
 
         if peer_id in network_errors:
             state = "UNREACHABLE"
