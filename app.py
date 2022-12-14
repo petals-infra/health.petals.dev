@@ -6,7 +6,7 @@ from typing import List, Tuple
 
 import hivemind
 from async_timeout import timeout
-from flask import Flask
+from flask import Flask, jsonify
 
 from petals.constants import PUBLIC_INITIAL_PEERS
 from petals.data_structures import ServerState
@@ -17,9 +17,9 @@ reachable_cache = hivemind.TimedStorage()
 
 
 async def check_for_network_errors(
-    peer_id, node, connect_timeout = 5, success_expiration = 600, failure_expiration = 60,
+    peer_id, _, node, *, connect_timeout = 5, expiration = 600, use_cache = True
 ):
-    if peer_id in reachable_cache:
+    if use_cache and peer_id in reachable_cache:
         return reachable_cache.get(peer_id).value
 
     try:
@@ -27,7 +27,7 @@ async def check_for_network_errors(
             await node.p2p._client.connect(peer_id, [])
             await node.p2p._client.disconnect(peer_id)
 
-        reachable_cache.store(peer_id, None, hivemind.get_dht_time() + success_expiration)
+        reachable_cache.store(peer_id, None, hivemind.get_dht_time() + expiration)
         return None
     except Exception as e:
         if isinstance(e, asyncio.TimeoutError):
@@ -35,12 +35,12 @@ async def check_for_network_errors(
         message = str(e)
         message = message if message else repr(e)
 
-        reachable_cache.store(peer_id, message, hivemind.get_dht_time() + failure_expiration)
+        reachable_cache.store(peer_id, message, hivemind.get_dht_time() + expiration)
         return message
 
 
-async def get_network_errors(peer_ids, _, node):
-    errors = await asyncio.gather(*[check_for_network_errors(peer_id, node) for peer_id in peer_ids])
+async def get_network_errors(peer_ids, dht, node):
+    errors = await asyncio.gather(*[check_for_network_errors(peer_id, dht, node) for peer_id in peer_ids])
     return {peer_id: err for peer_id, err in zip(peer_ids, errors) if err is not None}
 
 
@@ -54,6 +54,16 @@ def hello_world():
         dht, [f"bigscience/bloom-petals.{i}" for i in range(total_blocks)], float("inf"),
     )
     return f"<pre>{show_module_infos(module_infos, total_blocks)}</pre>"
+
+
+@app.route("/api/v1/is_reachable/<peer_id>")
+def api_v1_is_reachable(peer_id):
+    peer_id = hivemind.PeerID.from_base58(peer_id)
+    message = dht.run_coroutine(partial(check_for_network_errors, peer_id, use_cache=False))
+    return jsonify(
+        success=message is None,
+        message=message,
+    )
 
 
 @dataclass
@@ -116,7 +126,7 @@ def show_module_infos(module_infos, total_blocks=70):
     ])
 
     if network_errors:
-        lines.append("\n\nServer reachability issues (updated every 1 min):\n")
+        lines.append("\n\nServer reachability issues:\n")
         for peer_id, err in sorted(network_errors.items(), key=lambda item: str(item[0])):
             lines.append(f'{peer_id} | {err}')
         lines.append("\nPlease ask for help in #running-a-server if you are not sure how to fix this.")
