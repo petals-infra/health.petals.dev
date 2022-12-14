@@ -6,7 +6,7 @@ from typing import List, Tuple
 
 import hivemind
 from async_timeout import timeout
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 from petals.constants import PUBLIC_INITIAL_PEERS
 from petals.data_structures import ServerState
@@ -63,6 +63,7 @@ def api_v1_is_reachable(peer_id):
     return jsonify(
         success=message is None,
         message=message,
+        your_ip=request.remote_addr,
     )
 
 
