@@ -1,4 +1,5 @@
 import asyncio
+import threading
 from collections import defaultdict
 from functools import partial
 from dataclasses import dataclass, field
@@ -13,6 +14,7 @@ from petals.data_structures import ServerState
 from petals.dht_utils import get_remote_module_infos
 
 
+cache_lock = threading.Lock()
 reachable_cache = hivemind.TimedStorage()
 
 
@@ -20,14 +22,16 @@ async def check_for_network_errors(
     peer_id, _, node, *, connect_timeout = 5, expiration = 600, use_cache = True
 ):
     if use_cache and peer_id in reachable_cache:
-        return reachable_cache.get(peer_id).value
+        with cache_lock:
+            return reachable_cache.get(peer_id).value
 
     try:
         with timeout(connect_timeout):
             await node.p2p._client.connect(peer_id, [])
             await node.p2p._client.disconnect(peer_id)
 
-        reachable_cache.store(peer_id, None, hivemind.get_dht_time() + expiration)
+        with cache_lock:
+            reachable_cache.store(peer_id, None, hivemind.get_dht_time() + expiration)
         return None
     except Exception as e:
         if isinstance(e, asyncio.TimeoutError):
@@ -35,7 +39,8 @@ async def check_for_network_errors(
         message = str(e)
         message = message if message else repr(e)
 
-        reachable_cache.store(peer_id, message, hivemind.get_dht_time() + expiration)
+        with cache_lock:
+            reachable_cache.store(peer_id, message, hivemind.get_dht_time() + expiration)
         return message
 
 
