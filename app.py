@@ -8,6 +8,7 @@ from typing import List, Tuple
 import hivemind
 from async_timeout import timeout
 from flask import Flask, jsonify, request
+from multiaddr import Multiaddr
 
 from petals.constants import PUBLIC_INITIAL_PEERS
 from petals.data_structures import ServerState
@@ -53,7 +54,7 @@ dht = hivemind.DHT(initial_peers=PUBLIC_INITIAL_PEERS, client_mode=True, num_wor
 app = Flask(__name__)
 
 @app.route("/")
-def hello_world():
+def main_page():
     total_blocks = 70
     module_infos = get_remote_module_infos(
         dht, [f"bigscience/bloom-petals.{i}" for i in range(total_blocks)], float("inf"),
@@ -93,11 +94,23 @@ def show_module_infos(module_infos, total_blocks=70):
             if server.state == ServerState.ONLINE:
                 found = True
         n_found_blocks += found
+    all_blocks_found = n_found_blocks == total_blocks
 
-    swarm_state = "healthy" if n_found_blocks == total_blocks else "broken"
-    lines = [f"Swarm state: {swarm_state}\n"]
+    bootstrap_peer_ids = []
+    for addr in PUBLIC_INITIAL_PEERS:
+        peer_id = hivemind.PeerID.from_base58(Multiaddr(addr)['p2p'])
+        if peer_id not in bootstrap_peer_ids:
+            bootstrap_peer_ids.append(peer_id)
 
-    network_errors = dht.run_coroutine(partial(get_network_errors, list(servers.keys())))
+    network_errors = dht.run_coroutine(partial(get_network_errors, bootstrap_peer_ids + list(servers.keys())))
+    all_bootstrap_reachable = all(peer_id not in network_errors for peer_id in bootstrap_peer_ids)
+
+    swarm_state = "healthy" if all_blocks_found and all_bootstrap_reachable else "broken"
+    lines = [
+        f"Swarm state: {swarm_state}\n",
+        f"Bootstrap peers: {''.join('_' if peer_id in network_errors else '#' for peer_id in bootstrap_peer_ids)}\n",
+        "Servers:\n",
+    ]
 
     servers = sorted(servers.items(), key=lambda item: str(item[0]))
     for peer_id, server_info in servers:
