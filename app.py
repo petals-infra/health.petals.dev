@@ -137,7 +137,7 @@ def show_module_infos(module_infos, total_blocks=70):
         lines.append(f"{row_name} |{row}|")
 
     lines.extend([
-        "\n\nLegend:\n",
+        "\nLegend:\n",
         "# - online",
         "J - joining     (loading blocks)",
         "? - unreachable (port forwarding/NAT/firewall issues, see below)",
@@ -145,7 +145,7 @@ def show_module_infos(module_infos, total_blocks=70):
     ])
 
     if network_errors:
-        lines.append("\n\nServer reachability issues:\n")
+        lines.append("\nServer reachability issues:\n")
         for peer_id, err in sorted(network_errors.items(), key=lambda item: str(item[0])):
             lines.append(f'{peer_id} | {err}')
         lines.append("\nPlease ask for help in #running-a-server if you are not sure how to fix this.")
