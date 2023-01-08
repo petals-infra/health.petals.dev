@@ -4,9 +4,8 @@ body {
 }
 
 header {
-    margin-top: 20px;
-    margin-bottom: 30px;
-    margin-left: 100px;
+    margin: 25px 0;
+    text-align: center;
 }
 
 .logo {
@@ -66,7 +65,7 @@ footer {
 }
 
 table {
-    border-spacing: 3px;
+    border-spacing: 2px;
     margin-top: 10px;
 }
 
@@ -76,13 +75,16 @@ thead td {
 }
 
 tbody td {
-    padding: 2px 5px;
+    padding: 1px 5px;
     background-color: #f0f0f0;
 }
 
-.block-map, .error-message {
+.block-map {
+    padding: 1px;
+}
+
+.error-message {
     white-space: pre;
-    /* font-variant-numeric: tabular-nums lining-nums; */
 }
 
 .healthy {

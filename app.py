@@ -67,13 +67,13 @@ def main_page():
         block_indices = [block_idx for block_idx, state in server_info.blocks if state != ServerState.OFFLINE]
         block_indices = f"{min(block_indices)}:{max(block_indices) + 1}" if block_indices else ""
 
-        block_map = [' ' for _ in range(total_blocks)]
+        block_map = ['<td class="block-map"> </td>' for _ in range(total_blocks)]
         for block_idx, state in server_info.blocks:
             if state == ServerState.OFFLINE:
                 if peer_id in network_errors:
                     del network_errors[peer_id]
             state_name = state.name if peer_id not in network_errors else "unreachable"
-            block_map[block_idx] = get_state_html(state_name)
+            block_map[block_idx] = f'<td class="block-map">{get_state_html(state_name)}</td>'
         block_map = ''.join(block_map)
 
         server_rows.append({
@@ -92,6 +92,7 @@ def main_page():
         "index.html",
         swarm_state=swarm_state,
         bootstrap_states=bootstrap_states,
+        total_blocks=total_blocks,
         server_rows=server_rows,
         reachability_issues=reachability_issues,
     )
