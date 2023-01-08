@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=1024">
+    <link rel="icon" class="js-site-favicon" type="image/png" href="https://petals.ml/logo.svg">
+    <title>Petals Health Monitor</title>
+    <link href="static/health.css" rel="stylesheet">
+  </head>
+  <body>
+
+<header>
+  <div class="logo">
+    <a target="_blank" href="https://petals.ml"><img src="https://petals.ml/logo.svg" height="50" class="rot-image"></a>
+  </div>
+  <h1>Petals <span style="font-size: 13pt; color: #aaa;">Health Monitor</span></h1>
+</header>
+
+<main>
+<section>
+  <p>Swarm state: <span class="{{ swarm_state }}">{{ swarm_state }}</span></p>
+</section>
+
+<section>
+  <p>Bootstrap peers: {{ bootstrap_states|safe }}</p>
+</section>
+
+<section>
+  <p>Servers:</p>
+
+  <table class="servers">
+    <thead>
+      <tr>
+        <td>Peer ID</td>
+        <td>Throughput</td>
+        <td>Served blocks</td>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in server_rows %}
+      <tr>
+        <td>{{ row.peer_id }}</td>
+        <td>{{ "%.1f" | format(row.throughput) }} RPS</td>
+        <td class="block-map">{{ row.block_map|safe }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <p>Legend:</p>
+
+  <table>
+    <thead>
+      <tr><td colspan="2">Status</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr><td class="online">●</td><td>online</td><td>Up and running</td></tr>
+      <tr><td class="joining">●</td><td>joining</td><td>Loading blocks, joining soon</td></tr>
+      <tr><td class="unreachable">✖</td><td>unreachable</td><td>Unreachable from the Internet, see "Reachability issues" below</td></tr>
+      <tr><td class="offline">_</td><td>offline</td><td>Disconnected a few minutes ago</td></tr>
+    </tbody>
+  </table>
+</section>
+
+{% if reachability_issues %}
+<section>
+  <p>Reachability issues:</p>
+  <p class="hint">
+    Servers are likely to be unreachable due to port forwarding/NAT/firewall issues.
+    If you see your server here but don't know how to fix the issue, ask for help
+    in the <b><a target="_blank" href="https://discord.gg/Wuk8BnrEPH">#running-a-server</a></b> channel of our Dicord.
+  </p>
+
+  <table>
+    <thead>
+      <tr><td>Peer ID</td><td>Error message</td></tr>
+    </thead>
+    <tbody>
+      {% for row in reachability_issues %}
+      <tr>
+        <td>{{ row.peer_id }}</td>
+        <td class="error-message">{{ row.err }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+</main>
+<footer>You can find this tool's source code on <a target="_blank" href="https://github.com/borzunov/health.petals.ml">GitHub</a>.</footer>
+  </body>
+</html>
