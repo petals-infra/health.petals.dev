@@ -64,6 +64,9 @@ def main_page():
     servers = sorted(servers.items(), key=lambda item: str(item[0]))
     server_rows = []
     for peer_id, server_info in servers:
+        block_indices = [block_idx for block_idx, _ in server_info.blocks]
+        block_indices = f"{min(block_indices)}:{max(block_indices) + 1}"
+
         block_map = [' ' for _ in range(total_blocks)]
         for block_idx, state in server_info.blocks:
             if state == ServerState.OFFLINE:
@@ -76,6 +79,7 @@ def main_page():
         server_rows.append({
             "peer_id": peer_id,
             "throughput": server_info.throughput,
+            "block_indices": block_indices,
             "block_map": block_map,
         })
 

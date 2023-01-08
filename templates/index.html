@@ -33,7 +33,7 @@
       <tr>
         <td>Peer ID</td>
         <td>Throughput</td>
-        <td>Served blocks</td>
+        <td colspan="2">Served blocks</td>
       </tr>
     </thead>
     <tbody>
@@ -41,6 +41,7 @@
       <tr>
         <td>{{ row.peer_id }}</td>
         <td>{{ "%.1f" | format(row.throughput) }} RPS</td>
+        <td>{{ row.block_indices }}</td>
         <td class="block-map">{{ row.block_map|safe }}</td>
       </tr>
       {% endfor %}
