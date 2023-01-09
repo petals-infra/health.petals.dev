@@ -1,6 +1,6 @@
 from collections import defaultdict
-from functools import partial
 from dataclasses import dataclass, field
+from functools import partial
 from typing import List, Tuple
 
 import hivemind
@@ -12,8 +12,9 @@ from petals.dht_utils import get_remote_module_infos
 
 from p2p_utils import check_reachability, check_reachability_parallel
 
-
-dht = hivemind.DHT(initial_peers=PUBLIC_INITIAL_PEERS, client_mode=True, num_workers=32, use_auto_relay=True, start=True)
+dht = hivemind.DHT(
+    initial_peers=PUBLIC_INITIAL_PEERS, client_mode=True, num_workers=32, use_auto_relay=True, start=True
+)
 app = Flask(__name__)
 
 
@@ -28,7 +29,9 @@ class ServerInfo:
 def main_page():
     total_blocks = 70
     module_infos = get_remote_module_infos(
-        dht, [f"bigscience/bloom-petals.{i}" for i in range(total_blocks)], float("inf"),
+        dht,
+        [f"bigscience/bloom-petals.{i}" for i in range(total_blocks)],
+        float("inf"),
     )
 
     servers = defaultdict(ServerInfo)
@@ -48,7 +51,7 @@ def main_page():
 
     bootstrap_peer_ids = []
     for addr in PUBLIC_INITIAL_PEERS:
-        peer_id = hivemind.PeerID.from_base58(Multiaddr(addr)['p2p'])
+        peer_id = hivemind.PeerID.from_base58(Multiaddr(addr)["p2p"])
         if peer_id not in bootstrap_peer_ids:
             bootstrap_peer_ids.append(peer_id)
 
@@ -56,9 +59,8 @@ def main_page():
     all_bootstrap_reachable = all(peer_id not in network_errors for peer_id in bootstrap_peer_ids)
 
     swarm_state = "healthy" if all_blocks_found and all_bootstrap_reachable else "broken"
-    bootstrap_states = ''.join(
-        get_state_html("online" if peer_id not in network_errors else "unreachable")
-        for peer_id in bootstrap_peer_ids
+    bootstrap_states = "".join(
+        get_state_html("online" if peer_id not in network_errors else "unreachable") for peer_id in bootstrap_peer_ids
     )
 
     servers = sorted(servers.items(), key=lambda item: str(item[0]))
@@ -74,14 +76,16 @@ def main_page():
                     del network_errors[peer_id]
             state_name = state.name if peer_id not in network_errors else "unreachable"
             block_map[block_idx] = f'<td class="block-map">{get_state_html(state_name)}</td>'
-        block_map = ''.join(block_map)
+        block_map = "".join(block_map)
 
-        server_rows.append({
-            "peer_id": peer_id,
-            "throughput": server_info.throughput,
-            "block_indices": block_indices,
-            "block_map": block_map,
-        })
+        server_rows.append(
+            {
+                "peer_id": peer_id,
+                "throughput": server_info.throughput,
+                "block_indices": block_indices,
+                "block_map": block_map,
+            }
+        )
 
     reachability_issues = [
         {"peer_id": peer_id, "err": err}
@@ -101,11 +105,11 @@ def main_page():
 def get_state_html(state_name: str):
     state_name = state_name.lower()
     if state_name == "offline":
-        char = '_'
+        char = "_"
     elif state_name == "unreachable":
-        char = '✖'
+        char = "✖"
     else:
-        char = '●'
+        char = "●"
     return f'<span class="{state_name}">{char}</span>'
 
 

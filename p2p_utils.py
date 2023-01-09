@@ -4,12 +4,11 @@ import threading
 import hivemind
 from async_timeout import timeout
 
-
 cache_lock = threading.Lock()
 reachable_cache = hivemind.TimedStorage()
 
 
-async def check_reachability(peer_id, _, node, *, connect_timeout = 5, expiration = 600, use_cache = True):
+async def check_reachability(peer_id, _, node, *, connect_timeout=5, expiration=600, use_cache=True):
     if use_cache and peer_id in reachable_cache:
         with cache_lock:
             return reachable_cache.get(peer_id).value
