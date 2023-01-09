@@ -13,7 +13,7 @@ from petals.dht_utils import get_remote_module_infos
 from p2p_utils import check_reachability, check_reachability_parallel
 
 
-dht = hivemind.DHT(initial_peers=PUBLIC_INITIAL_PEERS, client_mode=True, num_workers=32, start=True)
+dht = hivemind.DHT(initial_peers=PUBLIC_INITIAL_PEERS, client_mode=True, num_workers=32, use_auto_relay=True, start=True)
 app = Flask(__name__)
 
 
