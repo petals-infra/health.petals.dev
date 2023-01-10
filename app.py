@@ -71,10 +71,12 @@ def main_page():
 
         block_map = ['<td class="block-map"> </td>' for _ in range(total_blocks)]
         for block_idx, state in server_info.blocks:
-            if state == ServerState.OFFLINE:
-                if peer_id in network_errors:
-                    del network_errors[peer_id]
-            state_name = state.name if peer_id not in network_errors else "unreachable"
+            state_name = state.name
+            if peer_id in network_errors:
+                if state == ServerState.ONLINE:
+                    state_name = "unreachable"
+                elif state == ServerState.OFFLINE:
+                    del network_errors[peer_id]  # No need to show the network error then
             block_map[block_idx] = f'<td class="block-map">{get_state_html(state_name)}</td>'
         block_map = "".join(block_map)
 
