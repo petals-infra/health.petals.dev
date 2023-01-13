@@ -72,6 +72,7 @@ table {
 thead td {
     padding: 5px;
     background-color: #eaeaff;
+    white-space: nowrap;
 }
 
 tbody td {

@@ -55,32 +55,30 @@ def main_page():
         if peer_id not in bootstrap_peer_ids:
             bootstrap_peer_ids.append(peer_id)
 
-    network_errors = dht.run_coroutine(partial(check_reachability_parallel, bootstrap_peer_ids + list(servers.keys())))
-    all_bootstrap_reachable = all(peer_id not in network_errors for peer_id in bootstrap_peer_ids)
+    rpc_infos = dht.run_coroutine(partial(check_reachability_parallel, bootstrap_peer_ids))
+    rpc_infos.update(dht.run_coroutine(partial(check_reachability_parallel, list(servers.keys()), fetch_info=True)))
 
+    all_bootstrap_reachable = all(rpc_infos[peer_id]["ok"] for peer_id in bootstrap_peer_ids)
     swarm_state = "healthy" if all_blocks_found and all_bootstrap_reachable else "broken"
     bootstrap_states = "".join(
-        get_state_html("online" if peer_id not in network_errors else "unreachable") for peer_id in bootstrap_peer_ids
+        get_state_html("online" if rpc_infos[peer_id]["ok"] else "unreachable") for peer_id in bootstrap_peer_ids
     )
 
-    servers = sorted(servers.items(), key=lambda item: str(item[0]))
     server_rows = []
-    for peer_id, server_info in servers:
+    for peer_id, server_info in sorted(servers.items()):
         block_indices = [block_idx for block_idx, state in server_info.blocks if state != ServerState.OFFLINE]
         block_indices = f"{min(block_indices)}:{max(block_indices) + 1}" if block_indices else ""
 
         block_map = ['<td class="block-map"> </td>' for _ in range(total_blocks)]
         for block_idx, state in server_info.blocks:
             state_name = state.name
-            if peer_id in network_errors:
-                if state == ServerState.ONLINE:
-                    state_name = "unreachable"
-                elif state == ServerState.OFFLINE:
-                    del network_errors[peer_id]  # No need to show the network error then
+            if state == ServerState.ONLINE and not rpc_infos[peer_id]["ok"]:
+                state_name = "unreachable"
             block_map[block_idx] = f'<td class="block-map">{get_state_html(state_name)}</td>'
         block_map = "".join(block_map)
 
-        server_rows.append(
+        row = rpc_infos[peer_id]
+        row.update(
             {
                 "peer_id": peer_id,
                 "throughput": server_info.throughput,
@@ -88,10 +86,13 @@ def main_page():
                 "block_map": block_map,
             }
         )
+        server_rows.append(row)
 
     reachability_issues = [
-        {"peer_id": peer_id, "err": err}
-        for peer_id, err in sorted(network_errors.items(), key=lambda item: str(item[0]))
+        {"peer_id": peer_id, "err": info["error"]}
+        for peer_id, info in sorted(rpc_infos.items())
+        if not info["ok"]
+        and (peer_id not in servers or any(state == ServerState.ONLINE for _, state in servers[peer_id].blocks))
     ]
 
     return render_template(
@@ -118,9 +119,9 @@ def get_state_html(state_name: str):
 @app.route("/api/v1/is_reachable/<peer_id>")
 def api_v1_is_reachable(peer_id):
     peer_id = hivemind.PeerID.from_base58(peer_id)
-    message = dht.run_coroutine(partial(check_reachability, peer_id, use_cache=False))
+    rpc_info = dht.run_coroutine(partial(check_reachability, peer_id, use_cache=False))
     return jsonify(
-        success=message is None,
-        message=message,
+        success=rpc_info["ok"],
+        message=rpc_info.get("error"),
         your_ip=request.remote_addr,
     )

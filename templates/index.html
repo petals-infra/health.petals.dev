@@ -32,7 +32,10 @@
     <thead>
       <tr>
         <td>Peer ID</td>
+        <td>Version</td>
         <td>Throughput</td>
+        <td>Cache <a id="explain-cache" href="#">?</a></td>
+        <td>DHT <a id="explain-dht-mode" href="#">?</a></td>
         <td colspan="{{ total_blocks + 1 }}">Served blocks</td>
       </tr>
     </thead>
@@ -40,7 +43,10 @@
       {% for row in server_rows %}
       <tr>
         <td>{{ row.peer_id }}</td>
+        <td>{{ row.version }}</td>
         <td>{{ "%.1f" | format(row.throughput) }} RPS</td>
+        <td>{% if 'cache_tokens_available' in row %}{{ row.cache_tokens_available | int }}{% endif %}</td>
+        <td>{% if 'dht_client_mode' in row %}{% if row.dht_client_mode %}Client{% else %}Full{% endif %}{% endif %}</td>
         <td>{{ row.block_indices }}</td>
         {{ row.block_map|safe }}
       </tr>
@@ -97,6 +103,24 @@
   </table>
 </section>
 {% endif %}
+
+<script>
+  document.getElementById("explain-cache").onclick = () => {
+    alert(
+      'This column shows the number of available attention cache tokens. ' +
+      'If it is low, inference requests may be delayed or rejected.'
+    );
+    return false;
+  };
+  document.getElementById("explain-dht-mode").onclick = () => {
+    alert(
+      'This column shows the server\'s DHT mode. ' +
+      '"Full" means that the server stores other nodes\' keys, ' +
+      'and "client" means that it only reads keys stored on other nodes.'
+    );
+    return false;
+  };
+</script>
 
 </main>
 <footer>You can find this tool's source code on <a target="_blank" href="https://github.com/borzunov/health.petals.ml">GitHub</a>.</footer>
