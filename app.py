@@ -28,7 +28,6 @@ class ModelInfo:
 
 MODELS = [
     ModelInfo("bigscience/bloom-petals", "bigscience/bloom", 70),
-    ModelInfo("borzunov/bloomz-560m-petals", "bigscience/bloomz-560m", 24),
 ]
 
 
@@ -41,6 +40,11 @@ class ServerInfo:
 
 @app.route("/")
 def main_page():
+    return app.send_static_file("index.html")
+
+
+@app.route("/health")
+def health():
     bootstrap_peer_ids = []
     for addr in PUBLIC_INITIAL_PEERS:
         peer_id = hivemind.PeerID.from_base58(Multiaddr(addr)["p2p"])
@@ -121,7 +125,7 @@ def main_page():
     ]
 
     return render_template(
-        "index.html",
+        "health.html",
         bootstrap_states=bootstrap_states,
         model_reports=model_reports,
         reachability_issues=reachability_issues,
