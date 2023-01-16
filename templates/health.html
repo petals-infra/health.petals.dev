@@ -1,0 +1,117 @@
+<section>
+  <p>Bootstrap peers: <span class="bootstrap-map">{{ bootstrap_states|safe }}</span></p>
+</section>
+
+{% for model in model_reports %}
+<section>
+  <p>
+    Model <a target="_blank" href="https://huggingface.co/{{ model.original_name }}">{{ model.name }}</a>
+    (<span class="{{ model.state }}">{{ model.state }}</span>):
+  </p>
+
+  <table class="servers">
+    <thead>
+      <tr>
+        <td>Server ID (<a class="show-full" href="#">full</a>)</td>
+        <td>Version</td>
+        <td>Throughput</td>
+        <td>Cache <a class="explain-cache" href="#">?</a></td>
+        <td>DHT <a class="explain-dht-mode" href="#">?</a></td>
+        <td colspan="{{ model.n_blocks + 1 }}">Served blocks</td>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in model.server_rows %}
+      <tr>
+        <td>
+          <span class="short-peer-id">{{ row.short_peer_id }}</span>
+          <span class="peer-id" style="display: none;">{{ row.peer_id }}</span>
+        </td>
+        <td>{{ row.version }}</td>
+        <td>{{ "%.1f" | format(row.throughput) }} RPS</td>
+        <td>{% if 'cache_tokens_available' in row %}{{ row.cache_tokens_available | int }}{% endif %}</td>
+        <td>{% if 'dht_client_mode' in row %}{% if row.dht_client_mode %}Client{% else %}Full{% endif %}{% endif %}</td>
+        <td>{{ row.block_indices }}</td>
+        {{ row.block_map|safe }}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="hint">
+    You can run
+    <a target="_blank" href="https://github.com/bigscience-workshop/petals#connect-your-gpu-and-increase-petals-capacity">your own server</a>
+    to increase Petals capacity.
+  </p>
+</section>
+{% endfor %}
+
+<section>
+  <p>Legend:</p>
+
+  <table>
+    <thead>
+      <tr><td colspan="2">Status</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr><td class="online">●</td><td>online</td><td>Up and running</td></tr>
+      <tr><td class="joining">●</td><td>joining</td><td>Loading blocks, joining soon</td></tr>
+      <tr><td class="unreachable">✖</td><td>unreachable</td><td>Unreachable from the Internet, see "Reachability issues" below</td></tr>
+      <tr><td class="offline">_</td><td>offline</td><td>Disconnected a few minutes ago</td></tr>
+    </tbody>
+  </table>
+</section>
+
+{% if reachability_issues %}
+<section>
+  <p>Reachability issues:</p>
+  <p class="hint">
+    Servers may be unreachable due to port forwarding/NAT/firewall issues.
+    Normally, they should become reachable in a few minutes, once they join
+    a <a href="https://docs.libp2p.io/concepts/nat/circuit-relay/">libp2p circuit relay</a>.
+    If your server fails to do that, please ask for help
+    in the <b><a target="_blank" href="https://discord.gg/Wuk8BnrEPH">#running-a-server</a></b> channel of our Dicord.
+  </p>
+
+  <table>
+    <thead>
+      <tr><td>Peer ID</td><td>Error message</td></tr>
+    </thead>
+    <tbody>
+      {% for row in reachability_issues %}
+      <tr>
+        <td>{{ row.peer_id }}</td>
+        <td class="error-message">{{ row.err }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+<script>
+$(() => {
+  $(".show-full").click(event => {
+    $(".show-full").text($(".show-full").first().text() == "full" ? "short" : "full");
+    $(".short-peer-id, .peer-id").toggle();
+    event.preventDefault();
+  });
+  $(".explain-cache").click(event => {
+    alert(
+      'This column shows the number of available attention cache tokens. ' +
+      'If it is low, inference requests may be delayed or rejected.'
+    );
+    event.preventDefault();
+  });
+  $(".explain-dht-mode").click(event => {
+    alert(
+      'This column shows the server\'s DHT mode. ' +
+      '"Full" means that the server stores other nodes\' keys, ' +
+      'and "client" means that it only reads keys stored on other nodes.'
+    );
+    event.preventDefault();
+  });
+});
+</script>
+
+<footer>You can find this tool's source code on <a target="_blank" href="https://github.com/borzunov/health.petals.ml">GitHub</a>.</footer>
