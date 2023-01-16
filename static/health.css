@@ -82,6 +82,7 @@ tbody td {
 
 .block-map {
     padding: 1px;
+    white-space: pre;
 }
 
 .error-message {
