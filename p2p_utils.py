@@ -10,7 +10,7 @@ cache_lock = threading.Lock()
 info_cache = hivemind.TimedStorage()
 
 
-async def check_reachability(peer_id, _, node, *, fetch_info=False, connect_timeout=5, expiration=600, use_cache=True):
+async def check_reachability(peer_id, _, node, *, fetch_info=False, connect_timeout=3, expiration=600, use_cache=True):
     if use_cache and peer_id in info_cache:
         with cache_lock:
             return info_cache.get(peer_id).value
