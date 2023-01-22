@@ -39,9 +39,13 @@
   </table>
 
   <p class="hint">
-    You can run
-    <a target="_blank" href="https://github.com/bigscience-workshop/petals#connect-your-gpu-and-increase-petals-capacity">your own server</a>
+    {% if model.production %}
+    You can
+    <a target="_blank" href="https://github.com/bigscience-workshop/petals#connect-your-gpu-and-increase-petals-capacity">run your own server</a>
     to increase Petals capacity.
+    {% else %}
+    This is a small model served for testing purposes. Use it to test your code faster while you develop something with Petals.
+    {% endif %}
   </p>
 </section>
 {% endfor %}
