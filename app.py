@@ -13,9 +13,9 @@ from petals.dht_utils import get_remote_module_infos
 from p2p_utils import check_reachability, check_reachability_parallel
 
 
-dht = hivemind.DHT(
-    initial_peers=PUBLIC_INITIAL_PEERS, client_mode=True, num_workers=32, use_auto_relay=True, start=True
-)
+INITIAL_PEERS = PUBLIC_INITIAL_PEERS
+
+dht = hivemind.DHT(initial_peers=INITIAL_PEERS, client_mode=True, num_workers=32, use_auto_relay=True, start=True)
 app = Flask(__name__)
 
 
@@ -49,7 +49,7 @@ def main_page():
 @app.route("/health")
 def health():
     bootstrap_peer_ids = []
-    for addr in PUBLIC_INITIAL_PEERS:
+    for addr in INITIAL_PEERS:
         peer_id = hivemind.PeerID.from_base58(Multiaddr(addr)["p2p"])
         if peer_id not in bootstrap_peer_ids:
             bootstrap_peer_ids.append(peer_id)
