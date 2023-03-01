@@ -44,4 +44,8 @@ gunicorn app:app --bind 0.0.0.0:5000 --workers 4 --threads 10
 
 ## Monitoring private swarm
 
-To monitor your private swarm instead of the public one, please replace `PUBLIC_INITIAL_PEERS` with a list of multiaddresses of your swarm's **initial peers** in [app.py](app.py).
+To monitor your private swarm instead of the public one, please replace `PUBLIC_INITIAL_PEERS` with a list of multiaddresses of your swarm's **initial peers** in [app.py](app.py). Example:
+
+```python
+INITIAL_PEERS = ['/ip4/10.1.2.3/tcp/31234/p2p/QmcXhze98AcgGQDDYna23s4Jho96n8wkwLJv78vxtFNq44']
+```
