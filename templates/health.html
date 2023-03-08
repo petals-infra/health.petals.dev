@@ -16,7 +16,7 @@
         <td>Version</td>
         <td>Throughput</td>
         <td>Cache <a class="explain-cache" href="#">?</a></td>
-        <td>DHT <a class="explain-dht-mode" href="#">?</a></td>
+        <td>Avl. <a class="explain-avl" href="#">?</a></td>
         <td colspan="{{ model.n_blocks + 1 }}">Served blocks</td>
       </tr>
     </thead>
@@ -30,7 +30,7 @@
         <td>{{ row.version }}</td>
         <td>{{ "%.1f" | format(row.throughput) }} RPS</td>
         <td>{% if 'cache_tokens_available' in row %}{{ row.cache_tokens_available | int }}{% endif %}</td>
-        <td>{% if 'dht_client_mode' in row %}{% if row.dht_client_mode %}Client{% else %}Full{% endif %}{% endif %}</td>
+        <td>{% if 'dht_client_mode' in row %}{% if row.dht_client_mode %}Relay{% else %}Direct{% endif %}{% endif %}</td>
         <td>{{ row.block_indices }}</td>
         {{ row.block_map|safe }}
       </tr>
@@ -107,11 +107,12 @@ $(() => {
     );
     event.preventDefault();
   });
-  $(".explain-dht-mode").click(event => {
+  $(".explain-avl").click(event => {
     alert(
-      'This column shows the server\'s DHT mode. ' +
-      '"Full" means that the server stores other nodes\' keys, ' +
-      'and "client" means that it only reads keys stored on other nodes.'
+      'This column shows whether a server is reachable directly or ' +
+      'we need to use libp2p relays to traverse NAT/firewalls and reach it. ' +
+      'Servers available through relays are usually slower, ' +
+      'so we don\'t store DHT keys on them.'
     );
     event.preventDefault();
   });
