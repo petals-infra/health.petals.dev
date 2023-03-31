@@ -16,7 +16,7 @@ from p2p_utils import check_reachability, check_reachability_parallel
 
 INITIAL_PEERS = PUBLIC_INITIAL_PEERS
 
-dht = hivemind.DHT(initial_peers=INITIAL_PEERS, client_mode=True, num_workers=32, use_auto_relay=True, start=True)
+dht = hivemind.DHT(initial_peers=INITIAL_PEERS, client_mode=True, num_workers=32, start=True)
 app = Flask(__name__)
 
 
