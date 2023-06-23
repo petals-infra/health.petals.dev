@@ -5,7 +5,8 @@
 {% for model in model_reports %}
 <section>
   <p>
-    Model <a target="_blank" href="https://huggingface.co/{{ model.original_name }}">{{ model.name }}</a>
+    Model
+    <a target="_blank" href="https://huggingface.co/{{ model.repo }}" title="DHT prefix: {{ model.dht_prefix }}">{{ model.repo }}</a>
     (<span class="{{ model.state }}">{{ model.state }}</span>):
   </p>
 
@@ -37,18 +38,16 @@
       {% endfor %}
     </tbody>
   </table>
-
-  <p class="hint">
-    {% if model.production %}
-    You can
-    <a target="_blank" href="https://github.com/bigscience-workshop/petals#connect-your-gpu-and-increase-petals-capacity">run your own server</a>
-    to increase Petals capacity.
-    {% else %}
-    This is a small model served for testing purposes. Use it to test your code faster while you develop something with Petals.
-    {% endif %}
-  </p>
 </section>
 {% endfor %}
+
+<section>
+  <p class="hint">
+    <b>Not enough servers?</b>
+    <a target="_blank" href="https://github.com/bigscience-workshop/petals#connect-your-gpu-and-increase-petals-capacity">Connect your GPU</a>
+    and increase Petals capacity!
+  </p>
+</section>
 
 <section>
   <p>Legend:</p>
@@ -119,5 +118,7 @@ $(() => {
 });
 </script>
 
-<footer>You can find this tool's source code on <a target="_blank" href="https://github.com/borzunov/health.petals.ml">GitHub</a>.
-Page generated in {{ gen_time|round(2) }} sec.</footer>
+<footer>
+  Page generated in {{ gen_time|round(2) }} sec.
+  See source code on <a target="_blank" href="https://github.com/borzunov/health.petals.ml">GitHub</a>.
+</footer>

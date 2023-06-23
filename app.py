@@ -7,32 +7,15 @@ import time
 import hivemind
 from flask import Flask, jsonify, render_template, request
 from multiaddr import Multiaddr
-from petals.constants import PUBLIC_INITIAL_PEERS
 from petals.data_structures import ServerState
 from petals.dht_utils import get_remote_module_infos
 
+import config
 from p2p_utils import check_reachability, check_reachability_parallel
 
 
-INITIAL_PEERS = PUBLIC_INITIAL_PEERS
-
-dht = hivemind.DHT(initial_peers=INITIAL_PEERS, client_mode=True, num_workers=32, start=True)
+dht = hivemind.DHT(initial_peers=config.INITIAL_PEERS, client_mode=True, num_workers=32, start=True)
 app = Flask(__name__)
-
-
-@dataclass
-class ModelInfo:
-    name: str
-    original_name: str
-    n_blocks: int
-    production: bool
-
-
-MODELS = [
-    ModelInfo("bigscience/bloom-petals", "bigscience/bloom", 70, production=True),
-    ModelInfo("bigscience/bloomz-petals", "bigscience/bloomz", 70, production=True),
-    ModelInfo("bigscience/bloom-7b1-petals", "bigscience/bloom-7b1", 30, production=False),
-]
 
 
 @dataclass
@@ -52,7 +35,7 @@ def main_page():
 def health():
     start_time = time.time()
     bootstrap_peer_ids = []
-    for addr in INITIAL_PEERS:
+    for addr in config.INITIAL_PEERS:
         peer_id = hivemind.PeerID.from_base58(Multiaddr(addr)["p2p"])
         if peer_id not in bootstrap_peer_ids:
             bootstrap_peer_ids.append(peer_id)
@@ -61,8 +44,8 @@ def health():
     all_bootstrap_reachable = all(rpc_infos[peer_id]["ok"] for peer_id in bootstrap_peer_ids)
 
     block_ids = []
-    for model in MODELS:
-        block_ids += [f"{model.name}.{i}" for i in range(model.n_blocks)]
+    for model in config.MODELS:
+        block_ids += [f"{model.dht_prefix}.{i}" for i in range(model.n_blocks)]
 
     module_infos = get_remote_module_infos(
         dht,
@@ -76,25 +59,25 @@ def health():
         if info is None:
             continue
 
-        model_name, block_idx_str = info.uid.split('.')
+        dht_prefix, block_idx_str = info.uid.split('.')
         found = False
         for peer_id, server in info.servers.items():
             servers[peer_id].throughput = server.throughput
             servers[peer_id].blocks.append((int(block_idx_str), server.state))
-            servers[peer_id].model = model_name
+            servers[peer_id].model = dht_prefix
             if server.state == ServerState.ONLINE:
                 found = True
-        n_found_blocks[model_name] += found
+        n_found_blocks[dht_prefix] += found
 
     rpc_infos.update(dht.run_coroutine(partial(check_reachability_parallel, list(servers.keys()), fetch_info=True)))
 
     model_reports = []
-    for model in MODELS:
-        all_blocks_found = n_found_blocks[model.name] == model.n_blocks
+    for model in config.MODELS:
+        all_blocks_found = n_found_blocks[model.dht_prefix] == model.n_blocks
         model_state = "healthy" if all_blocks_found and all_bootstrap_reachable else "broken"
 
         server_rows = []
-        model_servers = [(peer_id, server_info) for peer_id, server_info in servers.items() if server_info.model == model.name]
+        model_servers = [(peer_id, server_info) for peer_id, server_info in servers.items() if server_info.model == model.dht_prefix]
         for peer_id, server_info in sorted(model_servers):
             block_indices = [block_idx for block_idx, state in server_info.blocks if state != ServerState.OFFLINE]
             block_indices = f"{min(block_indices)}:{max(block_indices) + 1}" if block_indices else ""
@@ -120,8 +103,8 @@ def health():
             server_rows.append(row)
 
         model_reports.append({
-            "name": model.name,
-            "original_name": model.original_name,
+            "repo": model.repo,
+            "dht_prefix": model.dht_prefix,
             "n_blocks": model.n_blocks,
             "production": model.production,
             "state": model_state,
