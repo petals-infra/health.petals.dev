@@ -13,9 +13,11 @@
   <table class="servers">
     <thead>
       <tr>
-        <td>Server ID (<a class="show-full" href="#">full</a>)</td>
+        <td>Server ID (<a class="show-full-peer-id" href="#">full</a>)</td>
         <td>Version</td>
         <td>Throughput</td>
+        <td>Precision <a class="explain-precision" href="#">?</a></td>
+        <td>LoRAs (<a class="show-full-adapters" href="#">full</a>) <a class="explain-loras" href="#">?</a></td>
         <td>Cache <a class="explain-cache" href="#">?</a></td>
         <td>Avl. <a class="explain-avl" href="#">?</a></td>
         <td colspan="{{ model.n_blocks + 1 }}">Served blocks</td>
@@ -28,10 +30,17 @@
           <span class="short-peer-id">{{ row.short_peer_id }}</span>
           <span class="peer-id" style="display: none;">{{ row.peer_id }}</span>
         </td>
-        <td>{{ row.version }}</td>
-        <td>{{ "%.1f" | format(row.throughput) }} RPS</td>
-        <td>{% if 'cache_tokens_available' in row %}{{ row.cache_tokens_available | int }}{% endif %}</td>
-        <td>{% if 'dht_client_mode' in row %}{% if row.dht_client_mode %}Relay{% else %}Direct{% endif %}{% endif %}</td>
+        <td>{% if row.server_info.version %}{{ row.server_info.version }}{% else %}&lt; 1.2.0{% endif %}</td>
+        <td>{{ "%.1f" | format(row.server_info.throughput) }} RPS</td>
+        <td>
+          {% if row.server_info.torch_dtype %}{{ row.server_info.torch_dtype|replace('float', 'f') }}{% endif %}{% if row.server_info.quant_type %}, {{ row.server_info.quant_type }}{% endif %}
+        </td>
+        <td>
+          <span class="short-adapters">{{ row.short_adapter_names|join(', ') }}</span>
+          <span class="adapters" style="display: none;">{{ row.server_info.adapters|join(', ') }}</span>
+        </td>
+        <td>{% if row.server_info.cache_tokens_left %}{{ row.cache_tokens_left_per_block }}{% endif %}</td>
+        <td>{% if row.server_info.using_relay is not none %}{% if row.server_info.using_relay %}Relay{% else %}Direct{% endif %}{% endif %}</td>
         <td>{{ row.block_indices }}</td>
         {{ row.block_map|safe }}
       </tr>
@@ -94,14 +103,36 @@
 
 <script>
 $(() => {
-  $(".show-full").click(event => {
-    $(".show-full").text($(".show-full").first().text() == "full" ? "short" : "full");
+  $(".show-full-peer-id").click(event => {
+    $(".show-full-peer-id").text($(".show-full-peer-id").first().text() == "full" ? "short" : "full");
     $(".short-peer-id, .peer-id").toggle();
+    event.preventDefault();
+  });
+  $(".show-full-adapters").click(event => {
+    $(".show-full-adapters").text($(".show-full-adapters").first().text() == "full" ? "short" : "full");
+    $(".short-adapters, .adapters").toggle();
+    event.preventDefault();
+  });
+  $(".explain-precision").click(event => {
+    alert(
+      'This column shows torch data type used for computation and ' +
+      'quantization mode used for storing compressed weights.'
+    );
+    event.preventDefault();
+  });
+  $(".explain-loras").click(event => {
+    alert(
+      'This column shows LoRA adapters pre-loaded by the server. ' +
+      'A client may use one of these adapters if it wants to.\n\n' +
+      'To add adapters to your server, pass `--adapters repo_name` argument. ' +
+      'To use them in a client, set `AutoDistributedModel.from_pretrained(..., active_adapter="repo_name")` ' +
+      'when you create a distributed model.'
+    );
     event.preventDefault();
   });
   $(".explain-cache").click(event => {
     alert(
-      'This column shows the number of available attention cache tokens. ' +
+      'This column shows the number of available attention cache tokens (per block). ' +
       'If it is low, inference requests may be delayed or rejected.'
     );
     event.preventDefault();
