@@ -20,7 +20,6 @@ app = Flask(__name__)
 
 @dataclass
 class ServerInfo:
-    friendly_peer_id: str = None
     throughput: float = None
     blocks: List[Tuple[int, ServerState]] = field(default_factory=list)
     model: str = None
