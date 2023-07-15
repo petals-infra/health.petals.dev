@@ -17,7 +17,7 @@
         <td>Version</td>
         <td>Throughput</td>
         <td>Precision <a class="explain-precision" href="#">?</a></td>
-        <td>LoRAs <a class="explain-loras" href="#">?</a></td>
+        <td>Adapters <a class="explain-adapters" href="#">?</a></td>
         <td>Cache <a class="explain-cache" href="#">?</a></td>
         <td>Avl. <a class="explain-avl" href="#">?</a></td>
         <td colspan="{{ model.n_blocks + 1 }}">Served blocks</td>
@@ -117,7 +117,7 @@ $(() => {
     );
     event.preventDefault();
   });
-  $(".explain-loras").click(event => {
+  $(".explain-adapters").click(event => {
     alert(
       'This column shows LoRA adapters pre-loaded by the server. ' +
       'A client may use one of these adapters if it wants to.\n\n' +
