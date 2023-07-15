@@ -33,7 +33,8 @@
         <td>{% if row.server_info.version %}{{ row.server_info.version }}{% else %}&lt; 1.2.0{% endif %}</td>
         <td>{{ "%.1f" | format(row.server_info.throughput) }} RPS</td>
         <td>
-          {% if row.server_info.torch_dtype %}{{ row.server_info.torch_dtype|replace('float', 'f') }}{% endif %}{% if row.server_info.quant_type %}, {{ row.server_info.quant_type }}{% endif %}
+          {% if row.server_info.torch_dtype %}{{ row.server_info.torch_dtype|replace('float', 'f') }}{% endif %}
+          {% if row.server_info.quant_type %}({{ row.server_info.quant_type }}){% endif %}
         </td>
         <td>
           <span class="short-adapters">{{ row.short_adapter_names|join(', ') }}</span>
