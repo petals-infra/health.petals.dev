@@ -1,5 +1,5 @@
 from collections import defaultdict
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from functools import partial
 from typing import List, Optional, Tuple
 import time
@@ -95,20 +95,15 @@ def health():
                 "block_indices": block_indices,
                 "block_map": block_map,
                 "server_info": server.server_info,
-                "short_adapter_names": [name.split("/")[-1] for name in server.server_info.adapters],
+                "adapters": [{"name": name, "short_name": name.split("/")[-1]} for name in server.server_info.adapters],
             }
             if server.server_info.cache_tokens_left is not None:
                 row["cache_tokens_left_per_block"] = server.server_info.cache_tokens_left // len(server.blocks)
             server_rows.append(row)
 
-        model_reports.append({
-            "repo": model.repo,
-            "dht_prefix": model.dht_prefix,
-            "n_blocks": model.n_blocks,
-            "production": model.production,
-            "state": model_state,
-            "server_rows": server_rows,
-        })
+        report = asdict(model)
+        report.update({"state": model_state, "server_rows": server_rows})
+        model_reports.append(report)
 
     bootstrap_states = "".join(
         get_state_html("online" if rpc_infos[peer_id]["ok"] else "unreachable") for peer_id in bootstrap_peer_ids

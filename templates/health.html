@@ -6,7 +6,7 @@
 <section>
   <p>
     Model
-    <a target="_blank" href="https://huggingface.co/{{ model.repo }}" title="DHT prefix: {{ model.dht_prefix }}">{{ model.repo }}</a>
+    <a target="_blank" href="{{ model.href }}" title="DHT prefix: {{ model.dht_prefix }}">{{ model.name }}</a>
     (<span class="{{ model.state }}">{{ model.state }}</span>):
   </p>
 
@@ -17,7 +17,7 @@
         <td>Version</td>
         <td>Throughput</td>
         <td>Precision <a class="explain-precision" href="#">?</a></td>
-        <td>LoRAs (<a class="show-full-adapters" href="#">full</a>) <a class="explain-loras" href="#">?</a></td>
+        <td>LoRAs <a class="explain-loras" href="#">?</a></td>
         <td>Cache <a class="explain-cache" href="#">?</a></td>
         <td>Avl. <a class="explain-avl" href="#">?</a></td>
         <td colspan="{{ model.n_blocks + 1 }}">Served blocks</td>
@@ -37,8 +37,9 @@
           {% if row.server_info.quant_type %}({{ row.server_info.quant_type }}){% endif %}
         </td>
         <td>
-          <span class="short-adapters">{{ row.short_adapter_names|join(', ') }}</span>
-          <span class="adapters" style="display: none;">{{ row.server_info.adapters|join(', ') }}</span>
+          {% for adapter in row.adapters %}
+          <a target="_blank" href="https://huggingface.co/{{adapter.name}}"">{{ adapter.short_name }}</a>
+          {% endfor %}
         </td>
         <td>{% if row.server_info.cache_tokens_left %}{{ row.cache_tokens_left_per_block }}{% endif %}</td>
         <td>{% if row.server_info.using_relay is not none %}{% if row.server_info.using_relay %}Relay{% else %}Direct{% endif %}{% endif %}</td>
@@ -107,11 +108,6 @@ $(() => {
   $(".show-full-peer-id").click(event => {
     $(".show-full-peer-id").text($(".show-full-peer-id").first().text() == "full" ? "short" : "full");
     $(".short-peer-id, .peer-id").toggle();
-    event.preventDefault();
-  });
-  $(".show-full-adapters").click(event => {
-    $(".show-full-adapters").text($(".show-full-adapters").first().text() == "full" ? "short" : "full");
-    $(".short-adapters, .adapters").toggle();
     event.preventDefault();
   });
   $(".explain-precision").click(event => {
