@@ -83,7 +83,7 @@ footer {
 
 tbody, .bootstrap-map {
     font-family: 'Courier', monospace;
-    font-size: 9pt;
+    font-size: 8.75pt;
 }
 
 table {
@@ -96,11 +96,21 @@ table {
 thead td {
     padding: 5px;
     background-color: #eaeaff;
+    text-align: center;
+}
+
+.block-map-header {
+    text-align: left;
 }
 
 tbody td {
-    padding: 1px 5px;
+    padding: 3px 5px;
     background-color: #f0f0f0;
+    text-align: center;
+}
+
+.legend tbody td {
+    text-align: left;
 }
 
 .block-map {
