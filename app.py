@@ -96,6 +96,11 @@ def health():
                 "block_map": block_map,
                 "server_info": server.server_info,
                 "adapters": [{"name": name, "short_name": name.split("/")[-1]} for name in server.server_info.adapters],
+                "pings_to_here": [
+                    {"source_id": source_id, "rtt": source.server_info.next_pings[str(peer_id)]}
+                    for source_id, source in model_servers
+                    if source.server_info.next_pings is not None and str(peer_id) in source.server_info.next_pings
+                ],
             }
             if server.server_info.cache_tokens_left is not None:
                 row["cache_tokens_left_per_block"] = server.server_info.cache_tokens_left // len(server.blocks)

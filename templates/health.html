@@ -20,7 +20,8 @@
         <td>Adapters <a class="explain-adapters" href="#">?</a></td>
         <td>Cache <a class="explain-cache" href="#">?</a></td>
         <td>Avl. <a class="explain-avl" href="#">?</a></td>
-        <td colspan="{{ model.n_blocks + 1 }}">Served blocks</td>
+        <td>Pings <a class="explain-pings" href="#">?</a></td>
+        <td class="block-map-header" colspan="{{ model.n_blocks + 1 }}">Served blocks</td>
       </tr>
     </thead>
     <tbody>
@@ -33,7 +34,7 @@
         <td>{% if row.server_info.version %}{{ row.server_info.version }}{% else %}&lt; 1.2.0{% endif %}</td>
         <td>{{ "%.1f" | format(row.server_info.throughput) }} RPS</td>
         <td>
-          {% if row.server_info.torch_dtype %}{{ row.server_info.torch_dtype|replace('float', 'f') }}{% endif %}
+          {% if row.server_info.torch_dtype %}{{ row.server_info.torch_dtype | replace('float', 'f') }}{% endif %}
           {% if row.server_info.quant_type %}({{ row.server_info.quant_type }}){% endif %}
         </td>
         <td>
@@ -43,6 +44,15 @@
         </td>
         <td>{% if row.server_info.cache_tokens_left %}{{ row.cache_tokens_left_per_block }}{% endif %}</td>
         <td>{% if row.server_info.using_relay is not none %}{% if row.server_info.using_relay %}Relay{% else %}Direct{% endif %}{% endif %}</td>
+        <td class="ping" data-peer-id="{{ row.peer_id }}">
+          {% if row.server_info.next_pings %}
+          <a class="show" href="#">Show</a>
+          <a class="hide" style="display: none;" href="#">Hide</a>
+          {% endif %}
+          {% for item in row.pings_to_here %}
+          <span style="display: none;" class="rtt" data-source-id="{{ item.source_id }}">{{ "%.1f ms" | format(item.rtt * 1000) }}</span>
+          {% endfor %}
+        </td>
         <td>{{ row.block_indices }}</td>
         {{ row.block_map|safe }}
       </tr>
@@ -63,7 +73,7 @@
 <section>
   <p>Legend:</p>
 
-  <table>
+  <table class="legend">
     <thead>
       <tr><td colspan="2">Status</td><td>Description</td></tr>
     </thead>
@@ -142,6 +152,27 @@ $(() => {
       'so we don\'t store DHT keys on them.'
     );
     event.preventDefault();
+  });
+  $(".explain-pings").click(event => {
+    alert(
+      'Press show to see round trip times (pings) from this server to next ones ' +
+      'in a potential chain. This is used to find the fastest chain for inferene.'
+    );
+    event.preventDefault();
+  });
+
+  $('.ping .show').click(function (e) {
+    e.preventDefault();
+
+    $('.ping .show').hide();
+    $(this).siblings('.hide').show();
+    $(`.ping .rtt[data-source-id=${$(this).parent().data("peer-id")}]`).show();
+  });
+  $('.ping .hide').click(function (e) {
+    e.preventDefault();
+
+    $('.ping .hide, .ping .rtt').hide();
+    $('.ping .show').show();
   });
 });
 </script>
