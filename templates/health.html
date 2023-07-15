@@ -42,7 +42,7 @@
           <a target="_blank" href="https://huggingface.co/{{adapter.name}}"">{{ adapter.short_name }}</a>
           {% endfor %}
         </td>
-        <td>{% if row.server_info.cache_tokens_left %}{{ row.cache_tokens_left_per_block }}{% endif %}</td>
+        <td>{% if row.server_info.cache_tokens_left is not none %}{{ row.cache_tokens_left_per_block }}{% endif %}</td>
         <td>{% if row.server_info.using_relay is not none %}{% if row.server_info.using_relay %}Relay{% else %}Direct{% endif %}{% endif %}</td>
         <td class="ping" data-peer-id="{{ row.peer_id }}">
           {% if row.server_info.next_pings %}
