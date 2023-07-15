@@ -1,13 +1,13 @@
 from collections import defaultdict
 from dataclasses import dataclass, field
 from functools import partial
-from typing import List, Tuple
+from typing import List, Optional, Tuple
 import time
 
 import hivemind
 from flask import Flask, jsonify, render_template, request
 from multiaddr import Multiaddr
-from petals.data_structures import ServerState
+from petals.data_structures import ServerInfo, ServerState
 from petals.dht_utils import get_remote_module_infos
 
 import config
@@ -19,11 +19,10 @@ app = Flask(__name__)
 
 
 @dataclass
-class ServerInfo:
-    friendly_peer_id: str = None
-    throughput: float = None
+class MergedServerInfo:
+    model: Optional[str] = None
     blocks: List[Tuple[int, ServerState]] = field(default_factory=list)
-    model: str = None
+    server_info: Optional[ServerInfo] = None
 
 
 @app.route("/")
@@ -53,7 +52,7 @@ def health():
         float("inf"),
     )
 
-    servers = defaultdict(ServerInfo)
+    servers = defaultdict(MergedServerInfo)
     n_found_blocks = defaultdict(int)
     for info in module_infos:
         if info is None:
@@ -61,11 +60,11 @@ def health():
 
         dht_prefix, block_idx_str = info.uid.split('.')
         found = False
-        for peer_id, server in info.servers.items():
-            servers[peer_id].throughput = server.throughput
-            servers[peer_id].blocks.append((int(block_idx_str), server.state))
+        for peer_id, server_info in info.servers.items():
             servers[peer_id].model = dht_prefix
-            if server.state == ServerState.ONLINE:
+            servers[peer_id].blocks.append((int(block_idx_str), server_info.state))
+            servers[peer_id].server_info = server_info
+            if server_info.state == ServerState.ONLINE:
                 found = True
         n_found_blocks[dht_prefix] += found
 
@@ -77,29 +76,29 @@ def health():
         model_state = "healthy" if all_blocks_found and all_bootstrap_reachable else "broken"
 
         server_rows = []
-        model_servers = [(peer_id, server_info) for peer_id, server_info in servers.items() if server_info.model == model.dht_prefix]
-        for peer_id, server_info in sorted(model_servers):
-            block_indices = [block_idx for block_idx, state in server_info.blocks if state != ServerState.OFFLINE]
+        model_servers = [(peer_id, server) for peer_id, server in servers.items() if server.model == model.dht_prefix]
+        for peer_id, server in sorted(model_servers):
+            block_indices = [block_idx for block_idx, state in server.blocks if state != ServerState.OFFLINE]
             block_indices = f"{min(block_indices)}:{max(block_indices) + 1}" if block_indices else ""
 
             block_map = ['<td class="block-map"> </td>' for _ in range(model.n_blocks)]
-            for block_idx, state in server_info.blocks:
+            for block_idx, state in server.blocks:
                 state_name = state.name
                 if state == ServerState.ONLINE and not rpc_infos[peer_id]["ok"]:
                     state_name = "unreachable"
                 block_map[block_idx] = f'<td class="block-map">{get_state_html(state_name)}</td>'
             block_map = "".join(block_map)
 
-            row = rpc_infos[peer_id]
-            row.update(
-                {
-                    "short_peer_id": "..." + str(peer_id)[-12:],
-                    "peer_id": peer_id,
-                    "throughput": server_info.throughput,
-                    "block_indices": block_indices,
-                    "block_map": block_map,
-                }
-            )
+            row = {
+                "short_peer_id": "..." + str(peer_id)[-6:],
+                "peer_id": peer_id,
+                "block_indices": block_indices,
+                "block_map": block_map,
+                "server_info": server.server_info,
+                "short_adapter_names": [name.split("/")[-1] for name in server.server_info.adapters],
+            }
+            if server.server_info.cache_tokens_left is not None:
+                row["cache_tokens_left_per_block"] = server.server_info.cache_tokens_left // len(server.blocks)
             server_rows.append(row)
 
         model_reports.append({
