@@ -99,7 +99,7 @@ thead td {
     text-align: center;
 }
 
-.block-map-header {
+.bm-header {
     text-align: left;
 }
 
@@ -113,7 +113,7 @@ tbody td {
     text-align: left;
 }
 
-.block-map {
+.bm {
     padding: 0.1px;
     white-space: pre;
 }

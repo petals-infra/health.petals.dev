@@ -1,7 +1,7 @@
 from functools import partial
 
 import hivemind
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, request
 
 import config
 from p2p_utils import check_reachability
@@ -19,11 +19,11 @@ app = Flask(__name__)
 logger.info("Starting updater")
 updater = StateUpdaterThread(dht, app, daemon=True)
 updater.start()
+updater.ready.wait()
 
 
 @app.route("/")
 def main_page():
-    updater.ready.wait()
     return updater.last_state
 
 

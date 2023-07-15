@@ -20,7 +20,7 @@
 <main>
 
 <section>
-  <p>Bootstrap peers: <span class="bootstrap-map">{{ bootstrap_states|safe }}</span></p>
+  <p>Bootstrap peers: <span class="bootstrap-map">{{ bootstrap_map|safe }}</span></p>
 </section>
 
 {% for model in model_reports %}
@@ -42,7 +42,7 @@
         <td>Cache <a class="explain-cache" href="#">?</a></td>
         <td>Avl. <a class="explain-avl" href="#">?</a></td>
         <td>Pings <a class="explain-pings" href="#">?</a></td>
-        <td class="block-map-header" colspan="{{ model.n_blocks + 1 }}">Served blocks</td>
+        <td class="bm-header" colspan="{{ model.n_blocks + 1 }}">Served blocks</td>
       </tr>
     </thead>
     <tbody>

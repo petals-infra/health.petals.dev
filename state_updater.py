@@ -60,6 +60,11 @@ class StateUpdaterThread(threading.Thread):
         rpc_infos = self.dht.run_coroutine(partial(check_reachability_parallel, bootstrap_peer_ids))
         all_bootstrap_reachable = all(rpc_infos[peer_id]["ok"] for peer_id in bootstrap_peer_ids)
 
+        bootstrap_states = ["online" if rpc_infos[peer_id]["ok"] else "unreachable" for peer_id in bootstrap_peer_ids]
+        bootstrap_map = "".join(
+            f'<span class="{state_name}">{self._STATE_CHARS[state_name]}</span>' for state_name in bootstrap_states
+        )
+
         block_ids = []
         for model in config.MODELS:
             block_ids += [f"{model.dht_prefix}.{i}" for i in range(model.n_blocks)]
@@ -101,12 +106,12 @@ class StateUpdaterThread(threading.Thread):
                 block_indices = [block_idx for block_idx, state in server.blocks if state != ServerState.OFFLINE]
                 block_indices = f"{min(block_indices)}:{max(block_indices) + 1}" if block_indices else ""
 
-                block_map = ['<td class="block-map"> </td>' for _ in range(model.n_blocks)]
+                block_map = ['<td class="bm"> </td>' for _ in range(model.n_blocks)]
                 for block_idx, state in server.blocks:
-                    state_name = state.name
+                    state_name = state.name.lower()
                     if state == ServerState.ONLINE and not rpc_infos[peer_id]["ok"]:
                         state_name = "unreachable"
-                    block_map[block_idx] = f'<td class="block-map">{self._get_state_html(state_name)}</td>'
+                    block_map[block_idx] = f'<td class="bm {state_name}">{self._STATE_CHARS[state_name]}</td>'
                 block_map = "".join(block_map)
 
                 row = {
@@ -131,11 +136,6 @@ class StateUpdaterThread(threading.Thread):
             report.update({"state": model_state, "server_rows": server_rows})
             model_reports.append(report)
 
-        bootstrap_states = "".join(
-            self._get_state_html("online" if rpc_infos[peer_id]["ok"] else "unreachable")
-            for peer_id in bootstrap_peer_ids
-        )
-
         reachability_issues = [
             {"peer_id": peer_id, "err": info["error"]}
             for peer_id, info in sorted(rpc_infos.items())
@@ -145,20 +145,11 @@ class StateUpdaterThread(threading.Thread):
 
         with self.app.app_context():
             self.last_state = render_template("index.html",
-                bootstrap_states=bootstrap_states,
+                bootstrap_map=bootstrap_map,
                 model_reports=model_reports,
                 reachability_issues=reachability_issues,
                 last_updated=datetime.datetime.now(datetime.timezone.utc),
                 update_period=self.update_period,
             )
 
-    @staticmethod
-    def _get_state_html(state_name: str):
-        state_name = state_name.lower()
-        if state_name == "offline":
-            char = "_"
-        elif state_name == "unreachable":
-            char = "✖"
-        else:
-            char = "●"
-        return f'<span class="{state_name}">{char}</span>'
+    _STATE_CHARS = {"offline": "_", "unreachable": "✖", "joining": "●", "online": "●"}
