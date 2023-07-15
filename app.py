@@ -103,7 +103,8 @@ def health():
                 ],
             }
             if server.server_info.cache_tokens_left is not None:
-                row["cache_tokens_left_per_block"] = server.server_info.cache_tokens_left // len(server.blocks)
+                # We use num_blocks * 2 to account for both keys and values
+                row["cache_tokens_left_per_block"] = server.server_info.cache_tokens_left // (len(server.blocks) * 2)
             server_rows.append(row)
 
         report = asdict(model)
