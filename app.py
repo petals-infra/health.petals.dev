@@ -13,18 +13,18 @@ logger = hivemind.get_logger(__name__)
 logger.info("Connecting to DHT")
 dht = hivemind.DHT(initial_peers=config.INITIAL_PEERS, client_mode=True, num_workers=32, start=True)
 
-logger.info("Waiting for the first update")
-updater = StateUpdaterThread(dht, daemon=True)
-updater.start()
-updater.ready.wait()
-
 logger.info("Starting Flask app")
 app = Flask(__name__)
+
+logger.info("Starting updater")
+updater = StateUpdaterThread(dht, app, daemon=True)
+updater.start()
 
 
 @app.route("/")
 def main_page():
-    return render_template("index.html", **updater.last_state)
+    updater.ready.wait()
+    return updater.last_state
 
 
 @app.route("/api/v1/is_reachable/<peer_id>")

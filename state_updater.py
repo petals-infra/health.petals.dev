@@ -7,6 +7,7 @@ from functools import partial
 from typing import List, Optional, Tuple
 
 import hivemind
+from flask import Flask, render_template
 from multiaddr import Multiaddr
 from petals.data_structures import ServerInfo, ServerState
 from petals.dht_utils import get_remote_module_infos
@@ -25,9 +26,10 @@ class MergedServerInfo:
 
 
 class StateUpdaterThread(threading.Thread):
-    def __init__(self, dht: hivemind.DHT, *, update_period: int = 60, **kwargs):
+    def __init__(self, dht: hivemind.DHT, app: Flask, update_period: int = 60, **kwargs):
         super().__init__(**kwargs)
         self.dht = dht
+        self.app = app
         self.update_period = update_period
 
         self.last_state = None
@@ -39,7 +41,7 @@ class StateUpdaterThread(threading.Thread):
             try:
                 self.update()
                 self.ready.set()
-                logger.info("Fetched new state")
+                logger.info(f"Fetched new state in {time.perf_counter() - start_time:.1f} sec")
             except Exception:
                 logger.error("Failed to update state:", exc_info=True)
 
@@ -141,13 +143,14 @@ class StateUpdaterThread(threading.Thread):
             and (peer_id not in servers or any(state == ServerState.ONLINE for _, state in servers[peer_id].blocks))
         ]
 
-        self.last_state = dict(
-            bootstrap_states=bootstrap_states,
-            model_reports=model_reports,
-            reachability_issues=reachability_issues,
-            last_updated=datetime.datetime.now(datetime.timezone.utc),
-            update_period=self.update_period,
-        )
+        with self.app.app_context():
+            self.last_state = render_template("index.html",
+                bootstrap_states=bootstrap_states,
+                model_reports=model_reports,
+                reachability_issues=reachability_issues,
+                last_updated=datetime.datetime.now(datetime.timezone.utc),
+                update_period=self.update_period,
+            )
 
     @staticmethod
     def _get_state_html(state_name: str):
