@@ -1,9 +1,15 @@
 $(() => {
   $(".show-full-peer-id").click(event => {
-    $(".show-full-peer-id").text($(".show-full-peer-id").first().text() == "full" ? "short" : "full");
+    $(".show-full-peer-id").text($(".show-full-peer-id").first().text() == "»" ? "«" : "»");
     $(".short-peer-id, .peer-id").toggle();
     event.preventDefault();
   });
+  $(".toggle-rps-details").click(event => {
+    $(".toggle-rps-details").text($(".toggle-rps-details").first().text() == "»" ? "«" : "»");
+    $(".rps-details").toggle();
+    event.preventDefault();
+  });
+
   $(".explain-precision").click(event => {
     alert(
       'This column shows torch data type used for computation and ' +
