@@ -84,7 +84,7 @@
           {% endif %}
           {% for item in row.pings_to_here %}
           <span style="display: none;" class="rtt" data-source-id="{{ item.source_id }}">
-          {% if item.rtt <= 1 %}{{ "%.1f ms" | format(item.rtt * 1000) }}{% else %}> 1 s{% endif %}
+          {% if item.rtt <= 1 %}{{ "%.1f ms" | format(item.rtt * 1000) }}{% else %}&gt; 5 s{% endif %}
           </span>
           {% endfor %}
         </td>
