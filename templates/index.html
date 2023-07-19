@@ -59,7 +59,7 @@
         <td class="contributor">
           {% if row.show_public_name and row.server_info.public_name is not none %}
           {% if row.server_info.public_name.startswith('http://') or row.server_info.public_name.startswith('https://') %}
-          <a target="_blank" href="{{ row.server_info.public_name }}">{{ row.server_info.public_name.replace('http://', '').replace('https://', '')|truncate(20, True, '…') }}</a>
+          <a target="_blank" href="{{ row.server_info.public_name }}">{{ row.server_info.public_name.replace('http://', '').replace('https://', '').rstrip('/') | truncate(20, True, '…') }}</a>
           {% else %}
           {{ row.server_info.public_name|truncate(20, True, '…') }}
           {% endif %}
