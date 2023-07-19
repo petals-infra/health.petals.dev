@@ -103,6 +103,11 @@ class StateUpdaterThread(threading.Thread):
             server_rows = []
             model_servers = [(peer_id, server) for peer_id, server in servers.items() if server.model == model.dht_prefix]
             for peer_id, server in sorted(model_servers):
+                show_public_name = (
+                    len(server.blocks) >= 16 and
+                    all(state == ServerState.ONLINE for _, state in server.blocks)
+                )
+
                 block_indices = [block_idx for block_idx, state in server.blocks if state != ServerState.OFFLINE]
                 block_indices = f"{min(block_indices)}:{max(block_indices) + 1}" if block_indices else ""
 
@@ -117,6 +122,7 @@ class StateUpdaterThread(threading.Thread):
                 row = {
                     "short_peer_id": "..." + str(peer_id)[-6:],
                     "peer_id": peer_id,
+                    "show_public_name": show_public_name,
                     "block_indices": block_indices,
                     "block_map": block_map,
                     "server_info": server.server_info,

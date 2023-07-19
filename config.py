@@ -16,8 +16,22 @@ INITIAL_PEERS = PUBLIC_INITIAL_PEERS
 
 MODELS = [
     ModelInfo(
+        dht_prefix="Llama-2-70b-chat-hf",
+        name="meta-llama/Llama-2-70b-chat-hf",
+        href="https://huggingface.co/meta-llama/Llama-2-70b-chat-hf",
+        n_blocks=80,
+        production=True,
+    ),
+    ModelInfo(
+        dht_prefix="Llama-2-70b-hf",
+        name="meta-llama/Llama-2-70b-hf",
+        href="https://huggingface.co/meta-llama/Llama-2-70b-hf",
+        n_blocks=80,
+        production=True,
+    ),
+    ModelInfo(
         dht_prefix="llama-65b-hf",
-        name="llama-65b-hf",
+        name="enoch/llama-65b-hf",
         href="https://github.com/facebookresearch/llama/blob/main/MODEL_CARD.md",
         n_blocks=80,
         production=True,

@@ -10,6 +10,20 @@ $(() => {
     event.preventDefault();
   });
 
+  $(".explain-public-name").click(event => {
+    alert(
+      'You can specify the name displayed here with the `--public_name` argument. ' +
+      'Feel free to use your name, a social media account, or a name of your company ' +
+      'to get acknowledgements for hosting a server.\n\n' +
+      'The name is only displayed if your server is online and hosts more than 16 blocks. ' +
+      'Long names are truncated to 20 characters. ' +
+      'If the name starts with "http://" or "https://", we\'ll make it a hyperlink ' +
+      '(the address is not truncated).\n\n' +
+      'We will ban servers that use offensive names or add links to ' +
+      'any offsensive or illegal content.'
+    );
+    event.preventDefault();
+  });
   $(".explain-precision").click(event => {
     alert(
       'This column shows torch data type used for computation and ' +

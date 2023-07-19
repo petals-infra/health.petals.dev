@@ -35,12 +35,13 @@
     <thead>
       <tr>
         <td>Server ID <a class="show-full-peer-id" href="#">»</a></td>
+        <td>Contributor <a class="explain-public-name" href="#">?</a></td>
         <td>Version</td>
         <td>Throughput <a class="toggle-rps-details" href="#">»</a></td>
         <td class="rps-details" style="display: none;">Inference</td>
         <td class="rps-details" style="display: none;">Forward</td>
         <td class="rps-details" style="display: none;">Network</td>
-        <td>Precision <a class="explain-precision" href="#">?</a></td>
+        <td class="rps-details" style="display: none;">Precision <a class="explain-precision" href="#">?</a></td>
         <td>Adapters <a class="explain-adapters" href="#">?</a></td>
         <td>Cache <a class="explain-cache" href="#">?</a></td>
         <td>Avl. <a class="explain-avl" href="#">?</a></td>
@@ -55,7 +56,16 @@
           <span class="short-peer-id">{{ row.short_peer_id }}</span>
           <span class="peer-id" style="display: none;">{{ row.peer_id }}</span>
         </td>
-        <td>{% if row.server_info.version %}{{ row.server_info.version }}{% else %}&lt; 1.2.0{% endif %}</td>
+        <td class="contributor">
+          {% if row.show_public_name and row.server_info.public_name is not none %}
+          {% if row.server_info.public_name.startswith('http://') or row.server_info.public_name.startswith('https://') %}
+          <a target="_blank" href="{{ row.server_info.public_name }}">{{ row.server_info.public_name.replace('http://', '').replace('https://', '')|truncate(20, True, '…') }}</a>
+          {% else %}
+          {{ row.server_info.public_name|truncate(20, True, '…') }}
+          {% endif %}
+          {% endif %}
+        </td>
+        <td>{% if row.server_info.version %}{{ row.server_info.version|truncate(10, True, '…') }}{% else %}&lt; 1.2.0{% endif %}</td>
         <td>{{ "%.1f" | format(row.server_info.throughput) }} RPS</td>
         <td class="rps-details" style="display: none;">
           {% if row.server_info.inference_rps is not none %}{{ "%.0f" | format(row.server_info.inference_rps) }} RPS{% endif %}
@@ -66,7 +76,7 @@
         <td class="rps-details" style="display: none;">
           {% if row.server_info.network_rps is not none %}{{ "%.0f" | format(row.server_info.network_rps) }} RPS{% endif %}
         </td>
-        <td>
+        <td class="rps-details" style="display: none;">
           {% if row.server_info.torch_dtype %}{{ row.server_info.torch_dtype | replace('float', 'f') }}{% endif %}
           {% if row.server_info.quant_type %}({{ row.server_info.quant_type }}){% endif %}
         </td>
