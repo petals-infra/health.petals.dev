@@ -104,7 +104,7 @@ class StateUpdaterThread(threading.Thread):
             model_servers = [(peer_id, server) for peer_id, server in servers.items() if server.model == model.dht_prefix]
             for peer_id, server in sorted(model_servers):
                 show_public_name = (
-                    len(server.blocks) >= 16 and
+                    len(server.blocks) >= 10 and
                     all(state == ServerState.ONLINE for _, state in server.blocks)
                 )
 
