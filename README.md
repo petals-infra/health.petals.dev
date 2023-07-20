@@ -1,6 +1,6 @@
 # Petals Health Monitor
 
-Source code for the Petals health monitor: http://health.petals.ml
+Source code for the Petals health monitor: https://health.petals.dev
 
 ```
 Swarm state: healthy
@@ -30,8 +30,8 @@ See more info about Petals in its [main GitHub repo](https://github.com/bigscien
 You can run this app on your server using these commands:
 
 ```bash
-git clone https://github.com/petals-infra/health.petals.ml.git
-cd health.petals.ml
+git clone https://github.com/petals-infra/health.petals.dev.git
+cd health.petals.dev
 pip install -r requirements.txt
 flask run --host=0.0.0.0 --port=5000
 ```
