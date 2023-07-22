@@ -24,6 +24,20 @@ $(() => {
     );
     event.preventDefault();
   });
+  $(".explain-compute-rps").click(event => {
+    alert(
+      'Compute throughput, measured in tokens/sec per block. ' +
+      'Used for routing requests and load balancing servers between blocks.'
+    );
+    event.preventDefault();
+  });
+  $(".explain-network-rps").click(event => {
+    alert(
+      'Network throughput, measured in tokens/sec. ' +
+      'Used for routing requests and load balancing servers between blocks.'
+    );
+    event.preventDefault();
+  });
   $(".explain-precision").click(event => {
     alert(
       'This column shows torch data type used for computation and ' +
