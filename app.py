@@ -11,7 +11,7 @@ logger = hivemind.get_logger(__name__)
 
 
 logger.info("Connecting to DHT")
-dht = hivemind.DHT(initial_peers=config.INITIAL_PEERS, client_mode=True, num_workers=32, start=True)
+dht = hivemind.DHT(initial_peers=config.INITIAL_PEERS, client_mode=False, num_workers=32, start=True)
 
 logger.info("Starting Flask app")
 app = Flask(__name__)
