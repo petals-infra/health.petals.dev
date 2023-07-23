@@ -74,7 +74,7 @@ $(() => {
   $(".explain-pings").click(event => {
     alert(
       'Press show to see round trip times (pings) from this server to next ones ' +
-      'in a potential chain. This is used to find the fastest chain for inferene.'
+      'in a potential chain. This is used to find the fastest chain for inference.'
     );
     event.preventDefault();
   });
