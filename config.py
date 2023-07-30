@@ -16,6 +16,13 @@ INITIAL_PEERS = PUBLIC_INITIAL_PEERS
 
 MODELS = [
     ModelInfo(
+        dht_prefix="StableBeluga2-hf",
+        name="stabilityai/StableBeluga2",
+        href="https://huggingface.co/stabilityai/StableBeluga2",
+        n_blocks=80,
+        production=True,
+    ),
+    ModelInfo(
         dht_prefix="Llama-2-70b-chat-hf",
         name="meta-llama/Llama-2-70b-chat-hf",
         href="https://huggingface.co/meta-llama/Llama-2-70b-chat-hf",
