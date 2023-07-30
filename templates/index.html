@@ -65,7 +65,7 @@
           {% endif %}
           {% endif %}
         </td>
-        <td>{% if row.server_info.version %}{{ row.server_info.version|truncate(10, True, '…') }}{% else %}&lt; 1.2.0{% endif %}</td>
+        <td>{% if row.server_info.version %}{{ row.server_info.version|truncate(10, True, '…') }}{% else %}&lt; 2.0.0{% endif %}</td>
         <td>{{ "%.0f" | format(row.server_info.throughput) }} tok/s</td>
         <td class="rps-details" style="display: none;">
           {% if row.server_info.inference_rps is not none %}{{ "%.0f" | format(row.server_info.inference_rps) }}{% endif %}

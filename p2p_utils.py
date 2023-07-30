@@ -27,16 +27,12 @@ async def check_reachability(peer_id, _, node, *, fetch_info=False, connect_time
                 await node.p2p._client.disconnect(peer_id)
                 rpc_info = {"ok": True}
     except Exception as e:
-        if isinstance(e, hivemind.p2p.P2PHandlerError) and str(e) == "KeyError('')":
-            # Response of older Petals servers (version < 1.1.1)
-            rpc_info = {"ok": True}
+        # Actual connection error
+        if not isinstance(e, asyncio.TimeoutError):
+            message = str(e) if str(e) else repr(e)
         else:
-            # Actual connection error
-            if not isinstance(e, asyncio.TimeoutError):
-                message = str(e) if str(e) else repr(e)
-            else:
-                message = f"Failed to connect in {connect_timeout:.0f} sec. Firewall may be blocking connections"
-            rpc_info = {"ok": False, "error": message}
+            message = f"Failed to connect in {connect_timeout:.0f} sec. Firewall may be blocking connections"
+        rpc_info = {"ok": False, "error": message}
 
     with cache_lock:
         info_cache.store(peer_id, rpc_info, hivemind.get_dht_time() + expiration)
