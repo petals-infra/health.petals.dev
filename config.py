@@ -17,8 +17,8 @@ INITIAL_PEERS = PUBLIC_INITIAL_PEERS
 MODELS = [
     ModelInfo(
         dht_prefix="StableBeluga2-hf",
-        name="stabilityai/StableBeluga2",
-        href="https://huggingface.co/stabilityai/StableBeluga2",
+        name="petals-team/StableBeluga2",
+        href="https://huggingface.co/petals-team/StableBeluga2",
         n_blocks=80,
         production=True,
     ),
