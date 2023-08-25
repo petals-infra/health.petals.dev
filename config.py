@@ -23,6 +23,13 @@ MODELS = [
         production=True,
     ),
     ModelInfo(
+        dht_prefix="CodeLlama-34b-Instruct-hf",
+        name="codellama/CodeLlama-34b-Instruct-hf",
+        href="https://huggingface.co/codellama/CodeLlama-34b-Instruct-hf",
+        n_blocks=48,
+        production=True,
+    ),
+    ModelInfo(
         dht_prefix="Llama-2-70b-chat-hf",
         name="meta-llama/Llama-2-70b-chat-hf",
         href="https://huggingface.co/meta-llama/Llama-2-70b-chat-hf",
