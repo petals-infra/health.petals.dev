@@ -78,7 +78,7 @@
         </td>
         <td>
           {% if row.server_info.torch_dtype %}{{ row.server_info.torch_dtype | replace('float', 'f') }}{% endif %}
-          {% if row.server_info.quant_type %}({{ row.server_info.quant_type }}){% endif %}
+          {% if row.server_info.quant_type and row.server_info.quant_type != "none" %}({{ row.server_info.quant_type }}){% endif %}
         </td>
         <td>
           {% for adapter in row.adapters %}
