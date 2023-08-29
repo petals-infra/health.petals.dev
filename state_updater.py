@@ -103,9 +103,10 @@ class StateUpdaterThread(threading.Thread):
             server_rows = []
             model_servers = [(peer_id, server) for peer_id, server in servers.items() if server.model == model.dht_prefix]
             for peer_id, server in sorted(model_servers):
+                reachable = rpc_infos[peer_id]["ok"]
                 show_public_name = (
                     len(server.blocks) >= 10 and
-                    all(state == ServerState.ONLINE for _, state in server.blocks)
+                    all(state == ServerState.ONLINE for _, state in server.blocks) and reachable
                 )
 
                 block_indices = [block_idx for block_idx, state in server.blocks if state != ServerState.OFFLINE]
@@ -114,7 +115,7 @@ class StateUpdaterThread(threading.Thread):
                 block_map = ['<td class="bm"> </td>' for _ in range(model.n_blocks)]
                 for block_idx, state in server.blocks:
                     state_name = state.name.lower()
-                    if state == ServerState.ONLINE and not rpc_infos[peer_id]["ok"]:
+                    if state == ServerState.ONLINE and not reachable:
                         state_name = "unreachable"
                     block_map[block_idx] = f'<td class="bm {state_name}">{self._STATE_CHARS[state_name]}</td>'
                 block_map = "".join(block_map)
