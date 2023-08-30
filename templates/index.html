@@ -104,16 +104,16 @@
       {% endfor %}
     </tbody>
   </table>
-</section>
-{% endfor %}
 
-<section>
+  {% if model.state == "broken" %}
   <p class="hint">
     <b>Not enough servers?</b>
     <a target="_blank" href="https://github.com/bigscience-workshop/petals#connect-your-gpu-and-increase-petals-capacity">Connect your GPU</a>
     and increase Petals capacity!
   </p>
+  {% endif %}
 </section>
+{% endfor %}
 
 <section>
   <p>Legend:</p>
