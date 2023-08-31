@@ -48,6 +48,14 @@ section p {
     font-weight: bold;
 }
 
+.toc {
+    font-weight: normal;
+}
+
+.toc a {
+    text-decoration: none;
+}
+
 .loading, .error {
     margin: 150px 0;
     text-align: center;

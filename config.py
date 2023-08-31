@@ -1,21 +1,9 @@
-from typing import Optional
-from urllib.parse import urlparse
+from petals.constants import PUBLIC_INITIAL_PEERS
 
-import petals
-import pydantic
+from data_structures import ModelInfo
 
 
-@pydantic.dataclasses.dataclass
-class ModelInfo(petals.data_structures.ModelInfo):
-    dht_prefix: Optional[str] = None
-    official: bool = True
-
-    @property
-    def name(self) -> str:
-        return urlparse(self.repository).path.lstrip("/")
-
-
-INITIAL_PEERS = petals.constants.PUBLIC_INITIAL_PEERS
+INITIAL_PEERS = PUBLIC_INITIAL_PEERS
 
 MODELS = [
     ModelInfo(

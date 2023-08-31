@@ -6,7 +6,6 @@ from contextlib import suppress
 from dataclasses import asdict, dataclass, field
 from functools import partial
 from typing import List, Optional, Tuple
-from urllib.parse import urlparse
 
 import hivemind
 from flask import Flask, render_template
@@ -15,6 +14,7 @@ from petals.data_structures import ServerInfo, ServerState
 from petals.dht_utils import get_remote_module_infos
 
 import config
+from data_structures import ModelInfo
 from p2p_utils import check_reachability_parallel
 
 logger = hivemind.get_logger(__name__)
@@ -67,7 +67,7 @@ class StateUpdaterThread(threading.Thread):
             f'<span class="{state_name}">{self._STATE_CHARS[state_name]}</span>' for state_name in bootstrap_states
         )
 
-        models = config.MODELS
+        models = config.MODELS[:]
         official_dht_prefixes = {model.dht_prefix for model in models}
         model_index = self.dht.get("_petals.models")
         custom_models = []
@@ -75,7 +75,7 @@ class StateUpdaterThread(threading.Thread):
             if dht_prefix in official_dht_prefixes:
                 continue
             with suppress(TypeError, ValueError):
-                model_info = config.ModelInfo.from_dict(model.value)
+                model_info = ModelInfo.from_dict(model.value)
                 if model_info.repository is None or not model_info.repository.startswith("https://huggingface.co/"):
                     continue
                 model_info.dht_prefix = dht_prefix
@@ -159,7 +159,7 @@ class StateUpdaterThread(threading.Thread):
                 server_rows.append(row)
 
             report = asdict(model)
-            report.update(name=model.name, state=model_state, server_rows=server_rows)
+            report.update(name=model.name, short_name=model.short_name, state=model_state, server_rows=server_rows)
             model_reports.append(report)
 
         reachability_issues = [

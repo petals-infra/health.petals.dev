@@ -23,8 +23,20 @@
   <p>Bootstrap peers: <span class="bootstrap-map">{{ bootstrap_map|safe }}</span></p>
 </section>
 
-{% for model in model_reports %}
 <section>
+  <p>
+    Swarm:
+    <span class="toc">
+    {% for model in model_reports %}
+    <a class="{{ model.state }}" href="#{{ model.short_name }}" title="DHT prefix: {{ model.dht_prefix }}">{{ model.short_name }}</a>
+    {% if not loop.last %}&bull;{% endif %}
+    {% endfor %}
+    </span>
+  </p>
+</section>
+
+{% for model in model_reports %}
+<section id="{{ model.short_name }}">
   <p>
     Model
     <a target="_blank" href="{{ model.repository }}" title="DHT prefix: {{ model.dht_prefix }}">{{ model.name }}</a>
@@ -170,7 +182,7 @@
 </footer>
 
 <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
-<script src="./static/health.js"></script>
+<script src="./static/health.js?v=2"></script>
 
 </body>
 </html>
