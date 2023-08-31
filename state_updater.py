@@ -2,9 +2,11 @@ import datetime
 import time
 import threading
 from collections import defaultdict
+from contextlib import suppress
 from dataclasses import asdict, dataclass, field
 from functools import partial
 from typing import List, Optional, Tuple
+from urllib.parse import urlparse
 
 import hivemind
 from flask import Flask, render_template
@@ -65,9 +67,26 @@ class StateUpdaterThread(threading.Thread):
             f'<span class="{state_name}">{self._STATE_CHARS[state_name]}</span>' for state_name in bootstrap_states
         )
 
+        models = config.MODELS
+        official_dht_prefixes = {model.dht_prefix for model in models}
+        model_index = self.dht.get("_petals.models")
+        custom_models = []
+        for dht_prefix, model in model_index.value.items():
+            if dht_prefix in official_dht_prefixes:
+                continue
+            with suppress(TypeError, ValueError):
+                model_info = config.ModelInfo.from_dict(model.value)
+                if model_info.repository is None or not model_info.repository.startswith("https://huggingface.co/"):
+                    continue
+                model_info.dht_prefix = dht_prefix
+                model_info.official = False
+                custom_models.append(model_info)
+        models.extend(sorted(custom_models, key=lambda info: (-info.num_blocks, info.dht_prefix)))
+        logger.info(f"Fetching info for models {[info.name for info in models]}")
+
         block_ids = []
-        for model in config.MODELS:
-            block_ids += [f"{model.dht_prefix}.{i}" for i in range(model.n_blocks)]
+        for model in models:
+            block_ids += [f"{model.dht_prefix}.{i}" for i in range(model.num_blocks)]
 
         module_infos = get_remote_module_infos(
             self.dht,
@@ -96,8 +115,8 @@ class StateUpdaterThread(threading.Thread):
         )
 
         model_reports = []
-        for model in config.MODELS:
-            all_blocks_found = n_found_blocks[model.dht_prefix] == model.n_blocks
+        for model in models:
+            all_blocks_found = n_found_blocks[model.dht_prefix] == model.num_blocks
             model_state = "healthy" if all_blocks_found and all_bootstrap_reachable else "broken"
 
             server_rows = []
@@ -112,7 +131,7 @@ class StateUpdaterThread(threading.Thread):
                 block_indices = [block_idx for block_idx, state in server.blocks if state != ServerState.OFFLINE]
                 block_indices = f"{min(block_indices)}:{max(block_indices) + 1}" if block_indices else ""
 
-                block_map = ['<td class="bm"> </td>' for _ in range(model.n_blocks)]
+                block_map = ['<td class="bm"> </td>' for _ in range(model.num_blocks)]
                 for block_idx, state in server.blocks:
                     state_name = state.name.lower()
                     if state == ServerState.ONLINE and not reachable:
@@ -140,7 +159,7 @@ class StateUpdaterThread(threading.Thread):
                 server_rows.append(row)
 
             report = asdict(model)
-            report.update({"state": model_state, "server_rows": server_rows})
+            report.update(name=model.name, state=model_state, server_rows=server_rows)
             model_reports.append(report)
 
         reachability_issues = [

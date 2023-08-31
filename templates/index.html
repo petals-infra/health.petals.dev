@@ -27,9 +27,13 @@
 <section>
   <p>
     Model
-    <a target="_blank" href="{{ model.href }}" title="DHT prefix: {{ model.dht_prefix }}">{{ model.name }}</a>
+    <a target="_blank" href="{{ model.repository }}" title="DHT prefix: {{ model.dht_prefix }}">{{ model.name }}</a>
     (<span class="{{ model.state }}">{{ model.state }}</span>):
   </p>
+
+  {% if not model.official %}
+  <p class="hint">This model is <b>not</b> officially supported. Use it at your own risk.</p>
+  {% endif %}
 
   <table class="servers">
     <thead>
@@ -46,7 +50,7 @@
         <td>Cache <a class="explain-cache" href="#">?</a></td>
         <td>Avl. <a class="explain-avl" href="#">?</a></td>
         <td>Pings <a class="explain-pings" href="#">?</a></td>
-        <td class="bm-header" colspan="{{ model.n_blocks + 1 }}">Served blocks</td>
+        <td class="bm-header" colspan="{{ model.num_blocks + 1 }}">Served blocks</td>
       </tr>
     </thead>
     <tbody>
