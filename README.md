@@ -42,6 +42,14 @@ In production, we recommend using gunicorn instead of the Flask dev server:
 gunicorn app:app --bind 0.0.0.0:5000 --workers 4 --threads 10
 ```
 
+### Run with Docker
+
+```bash
+git clone https://github.com/petals-infra/health.petals.dev.git
+cd health.petals.dev
+docker-compose up --build -d
+```
+
 ## Monitoring private swarm
 
 To monitor your private swarm instead of the public one, please replace `PUBLIC_INITIAL_PEERS` with a list of multiaddresses of your swarm's **initial peers** in [config.py](config.py). Example:
