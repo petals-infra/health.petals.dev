@@ -68,20 +68,21 @@ class StateUpdaterThread(threading.Thread):
         )
 
         models = config.MODELS[:]
-        official_dht_prefixes = {model.dht_prefix for model in models}
         model_index = self.dht.get("_petals.models")
-        custom_models = []
-        for dht_prefix, model in model_index.value.items():
-            if dht_prefix in official_dht_prefixes:
-                continue
-            with suppress(TypeError, ValueError):
-                model_info = ModelInfo.from_dict(model.value)
-                if model_info.repository is None or not model_info.repository.startswith("https://huggingface.co/"):
+        if model_index is not None and isinstance(model_index.value, dict):
+            official_dht_prefixes = {model.dht_prefix for model in models}
+            custom_models = []
+            for dht_prefix, model in model_index.value.items():
+                if dht_prefix in official_dht_prefixes:
                     continue
-                model_info.dht_prefix = dht_prefix
-                model_info.official = False
-                custom_models.append(model_info)
-        models.extend(sorted(custom_models, key=lambda info: (-info.num_blocks, info.dht_prefix)))
+                with suppress(TypeError, ValueError):
+                    model_info = ModelInfo.from_dict(model.value)
+                    if model_info.repository is None or not model_info.repository.startswith("https://huggingface.co/"):
+                        continue
+                    model_info.dht_prefix = dht_prefix
+                    model_info.official = False
+                    custom_models.append(model_info)
+            models.extend(sorted(custom_models, key=lambda info: (-info.num_blocks, info.dht_prefix)))
         logger.info(f"Fetching info for models {[info.name for info in models]}")
 
         block_ids = []
