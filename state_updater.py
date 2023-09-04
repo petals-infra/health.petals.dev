@@ -1,7 +1,7 @@
 import datetime
 import time
 import threading
-from collections import defaultdict
+from collections import Counter, defaultdict
 from contextlib import suppress
 from dataclasses import asdict, dataclass, field
 from functools import partial
@@ -115,6 +115,7 @@ class StateUpdaterThread(threading.Thread):
             self.dht.run_coroutine(partial(check_reachability_parallel, list(servers.keys()), fetch_info=True))
         )
 
+        top_contributors = Counter()
         model_reports = []
         for model in models:
             all_blocks_found = n_found_blocks[model.dht_prefix] == model.num_blocks
@@ -128,6 +129,8 @@ class StateUpdaterThread(threading.Thread):
                     len(server.blocks) >= 10 and
                     all(state == ServerState.ONLINE for _, state in server.blocks) and reachable
                 )
+                if model.official and server.server_info.public_name and show_public_name:
+                    top_contributors[server.server_info.public_name] += len(server.blocks)
 
                 block_indices = [block_idx for block_idx, state in server.blocks if state != ServerState.OFFLINE]
                 block_indices = f"{min(block_indices)}:{max(block_indices) + 1}" if block_indices else ""
@@ -173,6 +176,7 @@ class StateUpdaterThread(threading.Thread):
         with self.app.app_context():
             self.last_state = render_template("index.html",
                 bootstrap_map=bootstrap_map,
+                top_contributors=top_contributors,
                 model_reports=model_reports,
                 reachability_issues=reachability_issues,
                 last_updated=datetime.datetime.now(datetime.timezone.utc),

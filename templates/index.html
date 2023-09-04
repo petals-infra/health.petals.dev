@@ -29,7 +29,24 @@
     <span class="toc">
     {% for model in model_reports %}
     <a class="{{ model.state }}" href="#{{ model.short_name }}" title="DHT prefix: {{ model.dht_prefix }}">{{ model.short_name }}</a>
-    {% if not loop.last %}&bull;{% endif %}
+    {% if not loop.last %}<span class="bull">&bull;</span>{% endif %}
+    {% endfor %}
+    </span>
+  </p>
+</section>
+
+<section>
+  <p>
+    Top contributors:
+    <span class="top-contributors">
+    {% for name, num_blocks in top_contributors.most_common(5) %}
+    {% if name.startswith('http://') or name.startswith('https://') %}
+    <a target="_blank" href="{{ name }}">{{ name.replace('http://', '').replace('https://', '').rstrip('/') | truncate(20, True, '…') }}</a>
+    {% else %}
+    {{ name|truncate(20, True, '…') }}
+    {% endif %}
+    <span class="gray">({{ num_blocks }} blocks)</span>
+    {% if not loop.last %}<span class="bull">&bull;</span>{% endif %}
     {% endfor %}
     </span>
   </p>
@@ -182,7 +199,7 @@
 </footer>
 
 <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
-<script src="./static/health.js?v=2"></script>
+<script src="./static/health.js?v=3"></script>
 
 </body>
 </html>
