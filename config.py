@@ -1,9 +1,14 @@
+import os
 from petals.constants import PUBLIC_INITIAL_PEERS
 
 from data_structures import ModelInfo
 
-
-INITIAL_PEERS = PUBLIC_INITIAL_PEERS
+initial_peers_str = os.getenv("INITIAL_PEERS")
+initial_peers_list = initial_peers_str.split(",") if initial_peers_str else []
+if len(initial_peers_list) > 0:
+    INITIAL_PEERS = initial_peers_list
+else:
+    INITIAL_PEERS = PUBLIC_INITIAL_PEERS
 
 MODELS = [
     ModelInfo(
