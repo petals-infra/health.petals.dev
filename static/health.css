@@ -48,8 +48,23 @@ section p {
     font-weight: bold;
 }
 
-.toc {
+.toc, .top-contributors {
+    margin-left: 5px;
     font-weight: normal;
+}
+
+.toc .bull {
+    color: #888;
+    margin: 0 1px;
+}
+
+.top-contributors .bull {
+    color: #888;
+    margin: 0 2px;
+}
+
+.gray {
+    color: #888;
 }
 
 .toc a {

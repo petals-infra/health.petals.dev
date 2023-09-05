@@ -37,7 +37,7 @@ class StateUpdaterThread(threading.Thread):
             time.sleep(max(delay, 0))
 
     def update(self) -> None:
-        bootstrap_peers, contrib_peers, models, reachability_issues = get_state(self.dht)
+        bootstrap_peers, contrib_peers, top_contributors, models, reachability_issues = get_state(self.dht)
 
         for model in models:
             for server in model["server_rows"]:
@@ -60,6 +60,7 @@ class StateUpdaterThread(threading.Thread):
                 bootstrap_map=bootstrap_map,
                 model_reports=models,
                 reachability_issues=reachability_issues,
+                top_cotributors=top_contributors,
                 last_updated=datetime.datetime.now(datetime.timezone.utc),
                 update_period=self.update_period,
             )

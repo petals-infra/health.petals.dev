@@ -7,7 +7,7 @@ from petals.dht_utils import get_remote_module_infos
 from data_structures import ModelInfo
 from p2p_utils import check_reachability_parallel
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 from contextlib import suppress
 from dataclasses import asdict, dataclass, field
 from functools import partial
@@ -51,7 +51,7 @@ def get_state(dht):
         and (peer_id not in servers or any(state == ServerState.ONLINE for _, state in servers[peer_id].blocks))
     ]
     models = config.MODELS[:]
-    model_index = dht.get("_petals.models")
+    model_index = dht.get("_petals.models", latest=True)
     if model_index is not None and isinstance(model_index.value, dict):
         official_dht_prefixes = {model.dht_prefix for model in models}
         custom_models = []
@@ -100,6 +100,7 @@ def get_state(dht):
 
     contrib_peers = rpc_infos
 
+    top_contributors = Counter()
     model_reports = []
     for model in models:
         all_blocks_found = n_found_blocks[model.dht_prefix] == model.num_blocks
@@ -113,6 +114,9 @@ def get_state(dht):
                 len(server.blocks) >= 10 and
                 all(state == ServerState.ONLINE for _, state in server.blocks) and reachable
             )
+
+            if model.official and server.server_info.public_name and show_public_name:
+                top_contributors[server.server_info.public_name] += len(server.blocks)
 
             block_indices = [block_idx for block_idx, state in server.blocks if state != ServerState.OFFLINE]
             block_indices = f"{min(block_indices)}:{max(block_indices) + 1}" if block_indices else ""
@@ -140,4 +144,4 @@ def get_state(dht):
         report.update(name=model.name, short_name=model.short_name, state=model_state, server_rows=server_rows)
         model_reports.append(report)
 
-    return bootstrap_states, contrib_peers, model_reports, reachability_issues
+    return bootstrap_states, contrib_peers, top_contributors, model_reports, reachability_issues
