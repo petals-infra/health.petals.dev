@@ -68,7 +68,7 @@ class StateUpdaterThread(threading.Thread):
         )
 
         models = config.MODELS[:]
-        model_index = self.dht.get("_petals.models")
+        model_index = self.dht.get("_petals.models", latest=True)
         if model_index is not None and isinstance(model_index.value, dict):
             official_dht_prefixes = {model.dht_prefix for model in models}
             custom_models = []
