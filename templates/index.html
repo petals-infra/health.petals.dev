@@ -64,6 +64,14 @@
   <p class="hint">This model is <b>not</b> officially supported. Use it at your own risk.</p>
   {% endif %}
 
+  {% if model.limited %}
+  <p class="hint">
+    This model is supposed to be used by our <a target="_blank" href="https://chat.petals.dev">chatbot app</a> only.
+    We do not provide a public API for this model due to
+    <a target="_blank" href="https://huggingface.co/tiiuae/falcon-180B-chat/blob/main/LICENSE.txt">license</a> restrictions.
+  </p>
+  {% endif %}
+
   <table class="servers">
     <thead>
       <tr>
