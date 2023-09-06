@@ -11,7 +11,7 @@ import hivemind
 from flask import Flask, render_template
 from multiaddr import Multiaddr
 from petals.data_structures import ServerInfo, ServerState
-from petals.dht_utils import get_remote_module_infos
+from petals.utils.dht import get_remote_module_infos
 
 import config
 from data_structures import ModelInfo
