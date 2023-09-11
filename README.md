@@ -57,3 +57,16 @@ To monitor your private swarm instead of the public one, please replace `PUBLIC_
 ```python
 INITIAL_PEERS = ['/ip4/10.1.2.3/tcp/31234/p2p/QmcXhze98AcgGQDDYna23s4Jho96n8wkwLJv78vxtFNq44']
 ```
+
+Or you can set the `INITIAL_PEERS` environment variable in the `docker-compose` as a comma separated list instead of editing the config file directly:
+
+```yaml
+version: '3.7'
+services:
+  app:
+    image: petals/health-monitor
+    ports:
+      - 5000:5000
+    environment:
+      - INITIAL_PEERS=/ip4/209.38.217.30/tcp/31337/p2p/QmecL18cmRaDdAcRmA7Ctj1gyAeUYG433WppA1UWTHTew6,/ip4/127.0.0.1/tcp/31337/p2p/QmecL18cmRaDdAcRmA7Ctj1gyAeUYG433WppA1UWTHTew6
+```
