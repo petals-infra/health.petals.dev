@@ -19,8 +19,16 @@
 
 <main>
 
+{% set state_chars = dict(offline="_", unreachable="✖", joining="●", online="●") %}
 <section>
-  <p>Bootstrap peers: <span class="bootstrap-map">{{ bootstrap_map|safe }}</span></p>
+  <p>
+    Bootstrap peers:
+    <span class="bootstrap-map">
+      {% for state in bootstrap_states %}
+      <span class="{{ state }}">{{ state_chars[state] }}</span>
+      {% endfor %}
+    </span>
+  </p>
 </section>
 
 <section>
@@ -139,8 +147,10 @@
           </span>
           {% endfor %}
         </td>
-        <td>{{ row.block_indices }}</td>
-        {{ row.block_map|safe }}
+        <td>{{ row.span.start }}:{{ row.span.end }}</td>
+        {% for _ in range(0, row.span.start) %}<td class="bm"> </td>{% endfor %}
+        {% for _ in range(row.span.start, row.span.end) %}<td class="bm {{ row.state }}">{{ state_chars[row.state] }}</td>{% endfor %}
+        {% for _ in range(row.span.end, model.num_blocks) %}<td class="bm"> </td>{% endfor %}
       </tr>
       {% endfor %}
     </tbody>

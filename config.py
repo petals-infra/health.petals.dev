@@ -2,7 +2,6 @@ from petals.constants import PUBLIC_INITIAL_PEERS
 
 from data_structures import ModelInfo
 
-
 INITIAL_PEERS = PUBLIC_INITIAL_PEERS
 
 MODELS = [
@@ -15,7 +14,7 @@ MODELS = [
         dht_prefix="falcon-180B-chat",
         repository="https://huggingface.co/tiiuae/falcon-180B-chat",
         num_blocks=80,
-        limited=True
+        limited=True,
     ),
     ModelInfo(
         dht_prefix="CodeLlama-34b-Instruct-hf",
@@ -48,3 +47,5 @@ MODELS = [
         num_blocks=70,
     ),
 ]
+
+UPDATE_PERIOD = 60

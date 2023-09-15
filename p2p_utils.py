@@ -3,7 +3,6 @@ import threading
 
 import hivemind
 from async_timeout import timeout
-
 from petals.server.handler import TransformerConnectionHandler
 
 cache_lock = threading.Lock()
