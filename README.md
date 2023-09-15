@@ -39,7 +39,7 @@ flask run --host=0.0.0.0 --port=5000
 In production, we recommend using gunicorn instead of the Flask dev server:
 
 ```bash
-gunicorn app:app --bind 0.0.0.0:5000 --workers 4 --threads 10
+gunicorn app:app --bind 0.0.0.0:5000 --worker-class gthread --threads 10 --timeout 120
 ```
 
 <details>
