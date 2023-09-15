@@ -1,9 +1,11 @@
 import datetime
+import json
 import threading
 import time
 from collections import Counter
 from contextlib import suppress
-from dataclasses import asdict
+from dataclasses import asdict, is_dataclass
+from enum import Enum
 from functools import partial
 
 import hivemind
@@ -27,7 +29,7 @@ class StateUpdaterThread(threading.Thread):
         self.app = app
         self.update_period = update_period
 
-        self.last_state = None
+        self.state_dict = self.state_html = None
         self.ready = threading.Event()
 
     def run(self):
@@ -139,13 +141,28 @@ class StateUpdaterThread(threading.Thread):
             dict(peer_id=peer_id, err=info["error"]) for peer_id, info in sorted(reach_infos.items()) if not info["ok"]
         ]
 
+        state_dict = dict(
+            bootstrap_states=bootstrap_states,
+            top_contributors=top_contributors,
+            model_reports=model_reports,
+            reachability_issues=reachability_issues,
+            last_updated=datetime.datetime.now(datetime.timezone.utc),
+            update_period=self.update_period,
+        )
+
         with self.app.app_context():
-            self.last_state = render_template(
-                "index.html",
-                bootstrap_states=bootstrap_states,
-                top_contributors=top_contributors,
-                model_reports=model_reports,
-                reachability_issues=reachability_issues,
-                last_updated=datetime.datetime.now(datetime.timezone.utc),
-                update_period=self.update_period,
-            )
+            self.state_html = render_template("index.html", **state_dict)
+        self.state_json = json.dumps(state_dict, indent=2, cls=CustomJSONEncoder)
+
+
+class CustomJSONEncoder(json.JSONEncoder):
+    def default(self, value):
+        if is_dataclass(value):
+            return asdict(value)
+        if isinstance(value, Enum):
+            return value.name.lower()
+        if isinstance(value, hivemind.PeerID):
+            return value.to_base58()
+        if isinstance(value, datetime.datetime):
+            return value.timestamp()
+        return super().default(value)

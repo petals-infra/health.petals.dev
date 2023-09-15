@@ -24,7 +24,12 @@ updater.ready.wait()
 
 @app.route("/")
 def main_page():
-    return updater.last_state
+    return updater.state_html
+
+
+@app.route("/api/v1/state")
+def api_v1_state():
+    return app.response_class(response=updater.state_json, status=200, mimetype="application/json")
 
 
 @app.route("/api/v1/is_reachable/<peer_id>")
