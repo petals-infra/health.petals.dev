@@ -47,3 +47,5 @@ MODELS = [
         num_blocks=70,
     ),
 ]
+
+UPDATE_PERIOD = 60
