@@ -1,6 +1,6 @@
 import datetime
-import time
 import threading
+import time
 from collections import Counter
 from contextlib import suppress
 from dataclasses import asdict
@@ -81,7 +81,7 @@ class StateUpdaterThread(threading.Thread):
         offset = 0
         for model in models:
             model_servers[model.dht_prefix] = compute_spans(
-                module_infos[offset:offset + model.num_blocks], min_state=ServerState.OFFLINE
+                module_infos[offset : offset + model.num_blocks], min_state=ServerState.OFFLINE
             )
             all_servers.update(model_servers[model.dht_prefix])
             offset += model.num_blocks
@@ -100,7 +100,7 @@ class StateUpdaterThread(threading.Thread):
                 reachable = reach_infos[peer_id]["ok"] if peer_id in reach_infos else True
                 state = span.state.name.lower() if reachable else "unreachable"
                 if state == "online":
-                    block_healthy[span.start:span.end] = True
+                    block_healthy[span.start : span.end] = True
 
                 show_public_name = state == "online" and span.length >= 10
                 if model.official and span.server_info.public_name and show_public_name:
@@ -125,20 +125,23 @@ class StateUpdaterThread(threading.Thread):
                     row["cache_tokens_left_per_block"] = span.server_info.cache_tokens_left // (span.length * 2)
                 server_rows.append(row)
 
-            model_reports.append(dict(
-                name=model.name,
-                short_name=model.short_name,
-                state="healthy" if block_healthy.all() else "broken",
-                server_rows=server_rows,
-                **asdict(model)
-            ))
+            model_reports.append(
+                dict(
+                    name=model.name,
+                    short_name=model.short_name,
+                    state="healthy" if block_healthy.all() else "broken",
+                    server_rows=server_rows,
+                    **asdict(model),
+                )
+            )
 
         reachability_issues = [
             dict(peer_id=peer_id, err=info["error"]) for peer_id, info in sorted(reach_infos.items()) if not info["ok"]
         ]
 
         with self.app.app_context():
-            self.last_state = render_template("index.html",
+            self.last_state = render_template(
+                "index.html",
                 bootstrap_states=bootstrap_states,
                 top_contributors=top_contributors,
                 model_reports=model_reports,
