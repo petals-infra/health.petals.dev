@@ -12,6 +12,12 @@ MODELS = [
         num_blocks=80,
     ),
     ModelInfo(
+        dht_prefix="falcon-180B-chat",
+        repository="https://huggingface.co/tiiuae/falcon-180B-chat",
+        num_blocks=80,
+        limited=True
+    ),
+    ModelInfo(
         dht_prefix="CodeLlama-34b-Instruct-hf",
         repository="https://huggingface.co/codellama/CodeLlama-34b-Instruct-hf",
         num_blocks=48,

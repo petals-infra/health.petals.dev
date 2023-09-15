@@ -9,6 +9,7 @@ import pydantic
 class ModelInfo(petals.data_structures.ModelInfo):
     dht_prefix: Optional[str] = None
     official: bool = True
+    limited: bool = False
 
     @property
     def name(self) -> str:
