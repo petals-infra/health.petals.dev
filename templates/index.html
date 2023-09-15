@@ -24,9 +24,7 @@
   <p>
     Bootstrap peers:
     <span class="bootstrap-map">
-      {% for state in bootstrap_states %}
-      <span class="{{ state }}">{{ state_chars[state] }}</span>
-      {% endfor %}
+      {% for state in bootstrap_states %}<span class="{{ state }}">{{ state_chars[state] }}</span>{% endfor %}
     </span>
   </p>
 </section>
