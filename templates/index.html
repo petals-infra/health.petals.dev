@@ -100,50 +100,51 @@
     </thead>
     <tbody>
       {% for row in model.server_rows %}
+      {% set server_info = row.span.server_info %}
       <tr>
         <td>
           <span class="short-peer-id">{{ row.short_peer_id }}</span>
           <span class="peer-id" style="display: none;">{{ row.peer_id }}</span>
         </td>
         <td class="contributor">
-          {% if row.show_public_name and row.server_info.public_name is not none %}
-          {% if row.server_info.public_name.startswith('http://') or row.server_info.public_name.startswith('https://') %}
-          <a target="_blank" href="{{ row.server_info.public_name }}">{{ row.server_info.public_name.replace('http://', '').replace('https://', '').rstrip('/') | truncate(20, True, '…') }}</a>
+          {% if row.show_public_name and server_info.public_name is not none %}
+          {% if server_info.public_name.startswith('http://') or server_info.public_name.startswith('https://') %}
+          <a target="_blank" href="{{ server_info.public_name }}">{{ server_info.public_name.replace('http://', '').replace('https://', '').rstrip('/') | truncate(20, True, '…') }}</a>
           {% else %}
-          {{ row.server_info.public_name|truncate(20, True, '…') }}
+          {{ server_info.public_name|truncate(20, True, '…') }}
           {% endif %}
           {% endif %}
         </td>
-        <td>{% if row.server_info.version %}{{ row.server_info.version|truncate(10, True, '…') }}{% else %}&lt; 2.0.0{% endif %}</td>
-        <td>{{ "%.0f" | format(row.server_info.throughput) }} tok/s</td>
+        <td>{% if server_info.version %}{{ server_info.version|truncate(10, True, '…') }}{% else %}&lt; 2.0.0{% endif %}</td>
+        <td>{{ "%.0f" | format(server_info.throughput) }} tok/s</td>
         <td class="rps-details" style="display: none;">
-          {% if row.server_info.inference_rps is not none %}{{ "%.0f" | format(row.server_info.inference_rps) }}{% endif %}
+          {% if server_info.inference_rps is not none %}{{ "%.0f" | format(server_info.inference_rps) }}{% endif %}
         </td>
         <td class="rps-details" style="display: none;">
-          {% if row.server_info.forward_rps is not none %}{{ "%.0f" | format(row.server_info.forward_rps) }}{% endif %}
+          {% if server_info.forward_rps is not none %}{{ "%.0f" | format(server_info.forward_rps) }}{% endif %}
         </td>
         <td class="rps-details" style="display: none;">
-          {% if row.server_info.network_rps is not none %}{{ "%.0f" | format(row.server_info.network_rps) }}{% endif %}
+          {% if server_info.network_rps is not none %}{{ "%.0f" | format(server_info.network_rps) }}{% endif %}
         </td>
         <td>
-          {% if row.server_info.torch_dtype %}{{ row.server_info.torch_dtype | replace('float', 'f') }}{% endif %}
-          {% if row.server_info.quant_type and row.server_info.quant_type != "none" %}({{ row.server_info.quant_type }}){% endif %}
+          {% if server_info.torch_dtype %}{{ server_info.torch_dtype | replace('float', 'f') }}{% endif %}
+          {% if server_info.quant_type and server_info.quant_type != "none" %}({{ server_info.quant_type }}){% endif %}
         </td>
         <td>
           {% for adapter in row.adapters %}
           <a target="_blank" href="https://huggingface.co/{{adapter.name}}"">{{ adapter.short_name }}</a>
           {% endfor %}
         </td>
-        <td>{% if row.server_info.cache_tokens_left is not none %}{{ row.cache_tokens_left_per_block }}{% endif %}</td>
-        <td>{% if row.server_info.using_relay is not none %}{% if row.server_info.using_relay %}Relay{% else %}Direct{% endif %}{% endif %}</td>
+        <td>{% if server_info.cache_tokens_left is not none %}{{ row.cache_tokens_left_per_block }}{% endif %}</td>
+        <td>{% if server_info.using_relay is not none %}{% if server_info.using_relay %}Relay{% else %}Direct{% endif %}{% endif %}</td>
         <td class="ping" data-peer-id="{{ row.peer_id }}">
-          {% if row.server_info.next_pings %}
+          {% if server_info.next_pings %}
           <a class="show" href="#">Show</a>
           <a class="hide" style="display: none;" href="#">Hide</a>
           {% endif %}
-          {% for item in row.pings_to_here %}
-          <span style="display: none;" class="rtt" data-source-id="{{ item.source_id }}">
-          {% if item.rtt <= 1 %}{{ "%.1f ms" | format(item.rtt * 1000) }}{% else %}&gt; 5 s{% endif %}
+          {% for source_id, rtt in row.pings_to_me.items() %}
+          <span style="display: none;" class="rtt" data-source-id="{{ source_id }}">
+          {% if rtt <= 5 %}{{ "%.1f ms" | format(rtt * 1000) }}{% else %}&gt; 5 s{% endif %}
           </span>
           {% endfor %}
         </td>

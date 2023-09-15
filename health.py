@@ -82,13 +82,12 @@ def fetch_health_state(dht: hivemind.DHT) -> dict:
                 "show_public_name": show_public_name,
                 "state": state,
                 "span": span,
-                "server_info": span.server_info,
                 "adapters": [dict(name=name, short_name=name.split("/")[-1]) for name in span.server_info.adapters],
-                "pings_to_here": [
-                    dict(source_id=source_id, rtt=source.server_info.next_pings[str(peer_id)])
-                    for source_id, source in model_servers[model.dht_prefix].items()
-                    if source.server_info.next_pings is not None and str(peer_id) in source.server_info.next_pings
-                ],
+                "pings_to_me": {
+                    str(origin_id): origin.server_info.next_pings[str(peer_id)]
+                    for origin_id, origin in model_servers[model.dht_prefix].items()
+                    if origin.server_info.next_pings is not None and str(peer_id) in origin.server_info.next_pings
+                },
             }
             if span.server_info.cache_tokens_left is not None:
                 # We use num_blocks * 2 to account for both keys and values
