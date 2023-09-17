@@ -1,18 +1,17 @@
 import asyncio
-import threading
 
 import hivemind
 from async_timeout import timeout
 from petals.server.handler import TransformerConnectionHandler
 
-cache_lock = threading.Lock()
 info_cache = hivemind.TimedStorage()
 
 
 async def check_reachability(peer_id, _, node, *, fetch_info=False, connect_timeout=5, expiration=300, use_cache=True):
-    with cache_lock:
-        if use_cache and peer_id in info_cache:
-            return info_cache.get(peer_id).value
+    if use_cache:
+        entry = info_cache.get(peer_id)
+        if entry is not None:
+            return entry.value
 
     try:
         with timeout(connect_timeout):
@@ -36,8 +35,7 @@ async def check_reachability(peer_id, _, node, *, fetch_info=False, connect_time
             message = f"Failed to connect in {connect_timeout:.0f} sec. Firewall may be blocking connections"
         rpc_info = {"ok": False, "error": message}
 
-    with cache_lock:
-        info_cache.store(peer_id, rpc_info, hivemind.get_dht_time() + expiration)
+    info_cache.store(peer_id, rpc_info, hivemind.get_dht_time() + expiration)
     return rpc_info
 
 
