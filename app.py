@@ -2,6 +2,7 @@ from functools import partial
 
 import hivemind
 from flask import Flask, jsonify, request
+from flask_cors import CORS
 
 import config
 from p2p_utils import check_reachability
@@ -15,6 +16,7 @@ dht = hivemind.DHT(initial_peers=config.INITIAL_PEERS, client_mode=True, num_wor
 
 logger.info("Starting Flask app")
 app = Flask(__name__)
+CORS(app)
 
 logger.info("Starting updater")
 updater = StateUpdaterThread(dht, app, daemon=True)
