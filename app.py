@@ -7,6 +7,7 @@ from flask_cors import CORS
 import config
 from p2p_utils import check_reachability
 from state_updater import StateUpdaterThread
+from prometheus import get_prometheus_payload
 
 logger = hivemind.get_logger(__name__)
 
@@ -43,3 +44,9 @@ def api_v1_is_reachable(peer_id):
         message=rpc_info.get("error"),
         your_ip=request.remote_addr,
     )
+
+
+@app.route("/metrics")
+@app.route("/api/prometheus")
+def metrics():
+    return app.response_class(response=get_prometheus_payload(updater.state_dict), status=200, mimetype="text/plain")
