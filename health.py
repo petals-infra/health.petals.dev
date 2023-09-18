@@ -1,4 +1,5 @@
 import datetime
+import time
 from collections import Counter
 from contextlib import suppress
 from dataclasses import asdict
@@ -18,6 +19,7 @@ logger = hivemind.get_logger(__name__)
 
 
 def fetch_health_state(dht: hivemind.DHT) -> dict:
+    start_time = time.perf_counter()
     bootstrap_peer_ids = []
     for addr in config.INITIAL_PEERS:
         peer_id = hivemind.PeerID.from_base58(Multiaddr(addr)["p2p"])
@@ -115,4 +117,5 @@ def fetch_health_state(dht: hivemind.DHT) -> dict:
         reachability_issues=reachability_issues,
         last_updated=datetime.datetime.now(datetime.timezone.utc),
         update_period=config.UPDATE_PERIOD,
+        update_duration=time.perf_counter() - start_time
     )
