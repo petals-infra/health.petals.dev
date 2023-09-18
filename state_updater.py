@@ -10,7 +10,7 @@ from flask import Flask, render_template
 
 import config
 from health import fetch_health_state
-from prometheus import get_prometheus_metrics
+from metrics import get_prometheus_metrics
 
 logger = hivemind.get_logger(__name__)
 
