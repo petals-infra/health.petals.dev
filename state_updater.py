@@ -10,6 +10,7 @@ from flask import Flask, render_template
 
 import config
 from health import fetch_health_state
+from prometheus import get_prometheus_metrics
 
 logger = hivemind.get_logger(__name__)
 
@@ -27,10 +28,11 @@ class StateUpdaterThread(threading.Thread):
         while True:
             start_time = time.perf_counter()
             try:
-                self.state_dict = fetch_health_state(self.dht)
+                state_dict = fetch_health_state(self.dht)
                 with self.app.app_context():
-                    self.state_html = render_template("index.html", **self.state_dict)
-                self.state_json = json.dumps(self.state_dict, indent=2, cls=CustomJSONEncoder)
+                    self.state_html = render_template("index.html", **state_dict)
+                    self.prometheus_metrics = get_prometheus_metrics(state_dict)
+                self.state_json = json.dumps(state_dict, indent=2, cls=CustomJSONEncoder)
 
                 self.ready.set()
                 logger.info(f"Fetched new state in {time.perf_counter() - start_time:.1f} sec")
