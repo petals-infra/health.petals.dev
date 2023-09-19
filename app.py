@@ -43,3 +43,9 @@ def api_v1_is_reachable(peer_id):
         message=rpc_info.get("error"),
         your_ip=request.remote_addr,
     )
+
+
+@app.route("/metrics")
+@app.route("/api/prometheus")
+def metrics():
+    return app.response_class(response=updater.prometheus_metrics, status=200, mimetype="text/plain")

@@ -10,6 +10,7 @@ from flask import Flask, render_template
 
 import config
 from health import fetch_health_state
+from metrics import get_prometheus_metrics
 
 logger = hivemind.get_logger(__name__)
 
@@ -30,6 +31,7 @@ class StateUpdaterThread(threading.Thread):
                 state_dict = fetch_health_state(self.dht)
                 with self.app.app_context():
                     self.state_html = render_template("index.html", **state_dict)
+                    self.prometheus_metrics = get_prometheus_metrics(state_dict)
                 self.state_json = json.dumps(state_dict, indent=2, cls=CustomJSONEncoder)
 
                 self.ready.set()
