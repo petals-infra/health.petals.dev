@@ -78,6 +78,10 @@ def fetch_health_state(dht: hivemind.DHT) -> dict:
             if model.official and span.server_info.public_name and show_public_name:
                 top_contributors[span.server_info.public_name] += span.length
 
+            for index, value in span.server_info.next_pings.items():
+                if value == float("inf"):
+                    span.server_info.next_pings[index] = 1
+
             row = {
                 "short_peer_id": "..." + str(peer_id)[-6:],
                 "peer_id": peer_id,
@@ -86,7 +90,7 @@ def fetch_health_state(dht: hivemind.DHT) -> dict:
                 "span": span,
                 "adapters": [dict(name=name, short_name=name.split("/")[-1]) for name in span.server_info.adapters],
                 "pings_to_me": {
-                    str(origin_id): origin.server_info.next_pings[str(peer_id)]
+                    str(origin_id): 1 if origin.server_info.next_pings[str(peer_id)] == float("inf") else origin.server_info.next_pings[str(peer_id)]
                     for origin_id, origin in model_servers[model.dht_prefix].items()
                     if origin.server_info.next_pings is not None and str(peer_id) in origin.server_info.next_pings
                 },
