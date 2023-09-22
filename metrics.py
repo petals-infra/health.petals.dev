@@ -1,9 +1,10 @@
 from collections import Counter, defaultdict
+from typing import List
 
 import numpy as np
 
 
-def get_servers_metrics(model_reports) -> list[str]:
+def get_servers_metrics(model_reports) -> List[str]:
     servers_num_total = 0
     servers_num_relay = 0
     num_peers = 0
@@ -57,7 +58,7 @@ def get_servers_metrics(model_reports) -> list[str]:
     return result
 
 
-def get_models_metrics(model_reports) -> list[str]:
+def get_models_metrics(model_reports) -> List[str]:
     result = [
         "# MODEL LEVEL METRICS",
     ]
