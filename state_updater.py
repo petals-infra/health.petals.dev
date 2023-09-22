@@ -1,11 +1,11 @@
 import datetime
-import json
 import threading
 import time
 from dataclasses import asdict, is_dataclass
 from enum import Enum
 
 import hivemind
+import simplejson
 from flask import Flask, render_template
 
 import config
@@ -32,7 +32,7 @@ class StateUpdaterThread(threading.Thread):
                 with self.app.app_context():
                     self.state_html = render_template("index.html", **state_dict)
                     self.prometheus_metrics = get_prometheus_metrics(state_dict)
-                self.state_json = json.dumps(state_dict, indent=2, cls=CustomJSONEncoder)
+                self.state_json = simplejson.dumps(state_dict, indent=2, ignore_nan=True, default=json_default)
 
                 self.ready.set()
                 logger.info(f"Fetched new state in {time.perf_counter() - start_time:.1f} sec")
@@ -45,14 +45,13 @@ class StateUpdaterThread(threading.Thread):
             time.sleep(max(delay, 0))
 
 
-class CustomJSONEncoder(json.JSONEncoder):
-    def default(self, value):
-        if is_dataclass(value):
-            return asdict(value)
-        if isinstance(value, Enum):
-            return value.name.lower()
-        if isinstance(value, hivemind.PeerID):
-            return value.to_base58()
-        if isinstance(value, datetime.datetime):
-            return value.timestamp()
-        return super().default(value)
+def json_default(value):
+    if is_dataclass(value):
+        return asdict(value)
+    if isinstance(value, Enum):
+        return value.name.lower()
+    if isinstance(value, hivemind.PeerID):
+        return value.to_base58()
+    if isinstance(value, datetime.datetime):
+        return value.timestamp()
+    raise TypeError(f"Can't serialize {repr(value)}")
