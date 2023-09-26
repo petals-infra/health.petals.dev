@@ -46,12 +46,16 @@
     Top contributors:
     <span class="top-contributors">
     {% for name, num_blocks in top_contributors.most_common(5) %}
-    {% if name.startswith('http://') or name.startswith('https://') %}
-    <a target="_blank" href="{{ name }}">{{ name.replace('http://', '').replace('https://', '').rstrip('/') | truncate(20, True, '…') }}</a>
-    {% else %}
-    {{ name|truncate(20, True, '…') }}
-    {% endif %}
-    <span class="gray">({{ num_blocks }} blocks)</span>
+    <span class="entry">
+      <span class="name">
+        {% if name.startswith('http://') or name.startswith('https://') %}
+        <a target="_blank" href="{{ name }}">{{ name.replace('http://', '').replace('https://', '').rstrip('/') | truncate(20, True, '…') }}</a>
+        {% else %}
+        {{ name|truncate(20, True, '…') }}
+        {% endif %}
+      </span>
+      <span class="num-blocks gray">({{ num_blocks }} blocks)</span>
+    </span>
     {% if not loop.last %}<span class="bull">&bull;</span>{% endif %}
     {% endfor %}
     </span>
