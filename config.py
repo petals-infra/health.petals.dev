@@ -26,21 +26,6 @@ MODELS = [
         repository="https://huggingface.co/meta-llama/Llama-2-70b-hf",
         num_blocks=80,
     ),
-    ModelInfo(
-        dht_prefix="llama-65b-hf",
-        repository="https://huggingface.co/huggyllama/llama-65b",
-        num_blocks=80,
-    ),
-    ModelInfo(
-        dht_prefix="bigscience/bloomz-petals",
-        repository="https://huggingface.co/bigscience/bloomz",
-        num_blocks=70,
-    ),
-    ModelInfo(
-        dht_prefix="bigscience/bloom-petals",
-        repository="https://huggingface.co/bigscience/bloom",
-        num_blocks=70,
-    ),
 ]
 
 UPDATE_PERIOD = 60
