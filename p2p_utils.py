@@ -62,5 +62,4 @@ def get_location(ip_address):
 def extract_peer_ip_info(multiaddr_str):
     if ip_match := re.search(r"/ip4/(\d+\.\d+\.\d+\.\d+)", multiaddr_str):
         return get_location(ip_match[1])
-    else:
-        return {}
+    return {}
