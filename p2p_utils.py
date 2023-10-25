@@ -51,7 +51,7 @@ async def check_reachability_parallel(peer_ids, dht, node, *, fetch_info=False):
 async def get_peers_ips(dht, dht_node):
     return await dht_node.p2p.list_peers()
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def get_location(ip_address):
     try:
         response = requests.get(f"http://ip-api.com/json/{ip_address}")
