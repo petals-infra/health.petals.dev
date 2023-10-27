@@ -63,7 +63,7 @@ def fetch_health_state(dht: hivemind.DHT) -> dict:
     online_servers = [peer_id for peer_id, span in all_servers.items() if span.state == ServerState.ONLINE]
 
     reach_infos.update(dht.run_coroutine(partial(check_reachability_parallel, online_servers, fetch_info=True)))
-    peers_info = {peer.peer_id._b58_str: extract_peer_ip_info(str(peer.addrs[0])) for peer in dht.run_coroutine(get_peers_ips)}
+    peers_info = {peer.peer_id._b58_str: { "location": extract_peer_ip_info(str(peer.addrs[0])), "multiaddrs": [str(multiaddr) for multiaddr in peer.addrs]} for peer in dht.run_coroutine(get_peers_ips)}
 
     top_contributors = Counter()
     model_reports = []
