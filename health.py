@@ -13,7 +13,7 @@ from petals.utils.dht import compute_spans, get_remote_module_infos
 
 import config
 from data_structures import ModelInfo
-from p2p_utils import check_reachability_parallel
+from p2p_utils import check_reachability_parallel, get_peers_ips, extract_peer_ip_info
 
 logger = hivemind.get_logger(__name__)
 
@@ -61,7 +61,9 @@ def fetch_health_state(dht: hivemind.DHT) -> dict:
         offset += model.num_blocks
 
     online_servers = [peer_id for peer_id, span in all_servers.items() if span.state == ServerState.ONLINE]
+
     reach_infos.update(dht.run_coroutine(partial(check_reachability_parallel, online_servers, fetch_info=True)))
+    peers_info = {str(peer.peer_id): {"location": extract_peer_ip_info(str(peer.addrs[0])), "multiaddrs": [str(multiaddr) for multiaddr in peer.addrs]} for peer in dht.run_coroutine(get_peers_ips)}
 
     top_contributors = Counter()
     model_reports = []
@@ -81,6 +83,7 @@ def fetch_health_state(dht: hivemind.DHT) -> dict:
             row = {
                 "short_peer_id": "..." + str(peer_id)[-6:],
                 "peer_id": peer_id,
+                "peer_ip_info": peers_info.get(str(peer_id), "unknown"),
                 "show_public_name": show_public_name,
                 "state": state,
                 "span": span,
