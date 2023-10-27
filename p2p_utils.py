@@ -51,16 +51,17 @@ async def check_reachability_parallel(peer_ids, dht, node, *, fetch_info=False):
 async def get_peers_ips(dht, dht_node):
     return await dht_node.p2p.list_peers()
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def get_location(ip_address):
     try:
         response = requests.get(f"http://ip-api.com/json/{ip_address}")
-        return response.json() if response.status_code == 200 else {}
-    except Exception as e:
-        return {}
+        if response.status_code == 200:
+            return response.json()
+    except Exception:
+        pass
+    return {}
 
 def extract_peer_ip_info(multiaddr_str):
     if ip_match := re.search(r"/ip4/(\d+\.\d+\.\d+\.\d+)", multiaddr_str):
         return get_location(ip_match[1])
-    else:
-        return {}
+    return {}
