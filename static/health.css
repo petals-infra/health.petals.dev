@@ -131,7 +131,7 @@ td.contributor {
 }
 
 tbody td {
-    padding: 3px 5px;
+    padding: 2px 4px;
     background-color: #f0f0f0;
     text-align: center;
 }
@@ -141,7 +141,9 @@ tbody td {
 }
 
 .bm {
-    padding: 0.1px;
+    padding: 0;
+    min-width: 8px;
+    max-width: 8px;
     white-space: pre;
 }
 
