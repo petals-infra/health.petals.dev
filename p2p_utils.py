@@ -16,7 +16,7 @@ async def check_reachability(peer_id, _, node, *, fetch_info=False, connect_time
             return entry.value
 
     try:
-        with timeout(connect_timeout):
+        async with timeout(connect_timeout):
             if fetch_info:  # For Petals servers
                 stub = TransformerConnectionHandler.get_stub(node.p2p, peer_id)
                 response = await stub.rpc_info(hivemind.proto.runtime_pb2.ExpertUID())
